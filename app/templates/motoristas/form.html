@@ -1,0 +1,126 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}{{ titulo }} - Argon Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header pb-0">
+                    <div class="d-flex align-items-center">
+                        <h6 class="mb-0">{{ titulo }}</h6>
+                        <a href="{{ url_for('motoristas.listar') }}" class="btn btn-secondary btn-sm ms-auto">
+                            <i class="fas fa-arrow-left"></i> Voltar
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        
+                        <p class="text-uppercase text-sm">Informações do Motorista</p>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ form.nome.label(class="form-control-label") }}
+                                    {{ form.nome(class="form-control" + (" is-invalid" if form.nome.errors else "")) }}
+                                    {% if form.nome.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.nome.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    {{ form.cpf.label(class="form-control-label") }}
+                                    {{ form.cpf(class="form-control" + (" is-invalid" if form.cpf.errors else ""), placeholder="000.000.000-00") }}
+                                    {% if form.cpf.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.cpf.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    {{ form.placa_caminhao.label(class="form-control-label") }}
+                                    {{ form.placa_caminhao(class="form-control" + (" is-invalid" if form.placa_caminhao.errors else ""), placeholder="ABC-1234") }}
+                                    {% if form.placa_caminhao.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.placa_caminhao.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    {{ form.empresa_id.label(class="form-control-label") }}
+                                    {{ form.empresa_id(class="form-select" + (" is-invalid" if form.empresa_id.errors else "")) }}
+                                    {% if form.empresa_id.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.empresa_id.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr class="horizontal dark">
+                        <p class="text-uppercase text-sm">Contato</p>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    {{ form.telefone.label(class="form-control-label") }}
+                                    {{ form.telefone(class="form-control", placeholder="(00) 0000-0000") }}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    {{ form.celular.label(class="form-control-label") }}
+                                    {{ form.celular(class="form-control", placeholder="(00) 00000-0000") }}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    {{ form.email.label(class="form-control-label") }}
+                                    {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""), placeholder="motorista@email.com") }}
+                                    {% if form.email.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.email.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-check form-switch">
+                                    {{ form.ativo(class="form-check-input") }}
+                                    {{ form.ativo.label(class="form-check-label") }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                {{ form.submit(class="btn btn-primary") }}
+                                <a href="{{ url_for('motoristas.listar') }}" class="btn btn-secondary">Cancelar</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

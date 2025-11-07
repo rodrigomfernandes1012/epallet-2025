@@ -1,0 +1,137 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Vale Pallet - PIN {{ vale.pin }} - Argon Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header pb-0">
+                    <div class="d-flex align-items-center">
+                        <h6 class="mb-0">Vale Pallet - PIN: {{ vale.pin }}</h6>
+                        <div class="ms-auto">
+                            {% if vale.status == 'pendente_entrega' %}
+                            <a href="{{ url_for('vale_pallet.editar', id=vale.id) }}" class="btn btn-primary btn-sm me-2">
+                                <i class="fas fa-edit"></i> Editar
+                            </a>
+                            <form method="POST" action="{{ url_for('vale_pallet.finalizar', id=vale.id) }}" style="display: inline;" onsubmit="return confirm('Tem certeza que deseja finalizar este vale pallet?');">
+                                <button type="submit" class="btn btn-success btn-sm me-2">
+                                    <i class="fas fa-check"></i> Finalizar
+                                </button>
+                            </form>
+                            <form method="POST" action="{{ url_for('vale_pallet.cancelar', id=vale.id) }}" style="display: inline;" onsubmit="return confirm('Tem certeza que deseja cancelar este vale pallet?');">
+                                <button type="submit" class="btn btn-danger btn-sm me-2">
+                                    <i class="fas fa-times"></i> Cancelar
+                                </button>
+                            </form>
+                            {% endif %}
+                            <a href="{{ url_for('vale_pallet.listar') }}" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-arrow-left"></i> Voltar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <div class="alert alert-{{ 'warning' if vale.status == 'pendente_entrega' else ('success' if vale.status == 'entrega_realizada' else 'secondary') }}">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <h3 class="mb-0">PIN: {{ vale.pin }}</h3>
+                                        <p class="mb-0">Status: <strong>{{ vale.get_status_display() }}</strong></p>
+                                        {% if vale.data_confirmacao %}
+                                        <p class="mb-0 text-sm">Confirmado em: {{ vale.data_confirmacao.strftime('%d/%m/%Y às %H:%M') }}</p>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        {% if vale.status == 'pendente_entrega' %}
+                                        <a href="{{ url_for('publico.confirmacao_recebimento') }}" target="_blank" class="btn btn-warning btn-sm">
+                                            <i class="fas fa-clipboard-check"></i> Confirmar Recebimento
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <p class="text-uppercase text-sm">Empresas Envolvidas</p>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-control-label">Cliente</label>
+                                <p class="form-control-static">
+                                    <a href="{{ url_for('empresas.visualizar', id=vale.cliente_id) }}">
+                                        {{ vale.cliente.razao_social }}
+                                    </a>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-control-label">Transportadora</label>
+                                <p class="form-control-static">
+                                    <a href="{{ url_for('empresas.visualizar', id=vale.transportadora_id) }}">
+                                        {{ vale.transportadora.razao_social }}
+                                    </a>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-control-label">Destinatário</label>
+                                <p class="form-control-static">
+                                    <a href="{{ url_for('empresas.visualizar', id=vale.destinatario_id) }}">
+                                        {{ vale.destinatario.razao_social }}
+                                    </a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr class="horizontal dark">
+                    <p class="text-uppercase text-sm">Dados do Vale</p>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-control-label">Número do Documento</label>
+                                <p class="form-control-static">{{ vale.numero_documento }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-control-label">Quantidade de Pallets</label>
+                                <p class="form-control-static">{{ vale.quantidade_pallets }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr class="horizontal dark">
+                    <p class="text-uppercase text-sm">Informações do Sistema</p>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-control-label">Data de Criação</label>
+                                <p class="form-control-static">{{ vale.data_criacao.strftime('%d/%m/%Y %H:%M') }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-control-label">Última Atualização</label>
+                                <p class="form-control-static">{{ vale.data_atualizacao.strftime('%d/%m/%Y %H:%M') if vale.data_atualizacao else '-' }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-control-label">Criado Por</label>
+                                <p class="form-control-static">{{ vale.criado_por_user.nome_completo }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

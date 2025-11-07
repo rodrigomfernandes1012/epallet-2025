@@ -1,0 +1,160 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Logs de Auditoria{% endblock %}
+{% block breadcrumb %}Logs de Auditoria{% endblock %}
+{% block page_title %}Logs de Auditoria{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-header pb-0">
+                <div class="row">
+                    <div class="col-6">
+                        <h6>Todos os Logs do Sistema</h6>
+                    </div>
+                    <div class="col-6 text-end">
+                        <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#filtrosCollapse">
+                            <i class="fas fa-filter me-2"></i>Filtros
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Filtros -->
+                <div class="collapse mt-3" id="filtrosCollapse">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Módulo</label>
+                            <input type="text" name="modulo" class="form-control" value="{{ modulo }}" placeholder="Ex: auth, empresas">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Ação</label>
+                            <input type="text" name="acao" class="form-control" value="{{ acao }}" placeholder="Ex: login, create">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Usuário</label>
+                            <input type="text" name="usuario" class="form-control" value="{{ usuario }}" placeholder="Nome do usuário">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">&nbsp;</label>
+                            <div>
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-search me-2"></i>Filtrar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="card-body px-0 pt-0 pb-2">
+                <div class="table-responsive p-0">
+                    <table class="table align-items-center mb-0">
+                        <thead>
+                            <tr>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Data/Hora</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Módulo</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Ação</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Descrição</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Usuário</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">IP</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in logs %}
+                            <tr>
+                                <td>
+                                    <p class="text-xs font-weight-bold mb-0">{{ log.data_hora.strftime('%d/%m/%Y') }}</p>
+                                    <p class="text-xs text-secondary mb-0">{{ log.data_hora.strftime('%H:%M:%S') }}</p>
+                                </td>
+                                <td>
+                                    <div class="d-flex px-2 py-1">
+                                        <div>
+                                            {% if log.modulo == 'auth' %}
+                                                <i class="fas fa-sign-in-alt text-primary me-2"></i>
+                                            {% elif log.modulo == 'empresas' %}
+                                                <i class="fas fa-building text-info me-2"></i>
+                                            {% elif log.modulo == 'vale_pallet' %}
+                                                <i class="fas fa-pallet text-success me-2"></i>
+                                            {% elif log.modulo == 'motoristas' %}
+                                                <i class="fas fa-truck text-warning me-2"></i>
+                                            {% elif log.modulo == 'publico' %}
+                                                <i class="fas fa-globe text-secondary me-2"></i>
+                                            {% else %}
+                                                <i class="fas fa-cog text-secondary me-2"></i>
+                                            {% endif %}
+                                        </div>
+                                        <div class="d-flex flex-column justify-content-center">
+                                            <h6 class="mb-0 text-sm">{{ log.modulo }}</h6>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <p class="text-xs font-weight-bold mb-0">{{ log.acao }}</p>
+                                    {% if log.operacao_sql %}
+                                        <span class="badge badge-sm badge-secondary">{{ log.operacao_sql }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <p class="text-xs text-secondary mb-0">{{ log.descricao[:80] }}{% if log.descricao|length > 80 %}...{% endif %}</p>
+                                    {% if log.tabela_afetada %}
+                                        <span class="badge badge-sm badge-light">{{ log.tabela_afetada }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="align-middle text-center text-sm">
+                                    <span class="badge badge-sm bg-gradient-secondary">{{ log.usuario_nome or 'Público' }}</span>
+                                </td>
+                                <td class="align-middle text-center">
+                                    <span class="text-secondary text-xs font-weight-bold">{{ log.ip_origem }}</span>
+                                </td>
+                                <td class="align-middle text-center text-sm">
+                                    {% if log.sucesso %}
+                                        <span class="badge badge-sm bg-gradient-success">Sucesso</span>
+                                    {% else %}
+                                        <span class="badge badge-sm bg-gradient-danger">Erro</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Paginação -->
+                {% if pagination.pages > 1 %}
+                <div class="d-flex justify-content-center mt-4">
+                    <nav aria-label="Navegação de página">
+                        <ul class="pagination">
+                            {% if pagination.has_prev %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('logs.listar', page=pagination.prev_num, modulo=modulo, acao=acao, usuario=usuario) }}">Anterior</a>
+                                </li>
+                            {% endif %}
+                            
+                            {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                                {% if page_num %}
+                                    {% if page_num == pagination.page %}
+                                        <li class="page-item active"><a class="page-link" href="#">{{ page_num }}</a></li>
+                                    {% else %}
+                                        <li class="page-item"><a class="page-link" href="{{ url_for('logs.listar', page=page_num, modulo=modulo, acao=acao, usuario=usuario) }}">{{ page_num }}</a></li>
+                                    {% endif %}
+                                {% else %}
+                                    <li class="page-item disabled"><a class="page-link" href="#">...</a></li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if pagination.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('logs.listar', page=pagination.next_num, modulo=modulo, acao=acao, usuario=usuario) }}">Próximo</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+                {% endif %}
+                
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Validação de PIN - Sistema de Gestão Epallet</title>
+    
+    <!-- Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Argon CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/argon-dashboard.min.css') }}">
+</head>
+<body class="">
+    <main class="main-content mt-0">
+        <section>
+            <div class="page-header min-vh-100">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-xl-5 col-lg-6 col-md-7 d-flex flex-column mx-auto">
+                            <div class="card card-plain">
+                                <div class="card-header pb-0 text-start">
+                                    <h4 class="font-weight-bolder">Validação do PIN</h4>
+                                    <p class="mb-0">Digite o número do documento e o PIN para validar</p>
+                                </div>
+                                <div class="card-body">
+                                    
+                                    <!-- Flash Messages -->
+                                    {% with messages = get_flashed_messages(with_categories=true) %}
+                                        {% if messages %}
+                                            {% for category, message in messages %}
+                                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                                    <span class="alert-text">{{ message }}</span>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endwith %}
+                                    
+                                    {% if not resultado %}
+                                    <!-- Formulário de Validação -->
+                                    <form role="form" method="POST">
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">Número do Documento</label>
+                                            <input type="text" name="numero_documento" class="form-control form-control-lg" placeholder="Digite o número do documento" required>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">PIN</label>
+                                            <input type="text" name="pin" class="form-control form-control-lg" placeholder="Digite o PIN de 4 dígitos" maxlength="4" pattern="[0-9]{4}" required>
+                                        </div>
+                                        
+                                        <div class="text-center">
+                                            <button type="submit" class="btn btn-lg btn-primary btn-lg w-100 mt-4 mb-0">
+                                                Validar PIN
+                                            </button>
+                                        </div>
+                                    </form>
+                                    {% else %}
+                                    <!-- Resultado da Validação -->
+                                    
+                                    {% if resultado == 'sucesso' %}
+                                    <!-- Sucesso -->
+                                    <div class="alert alert-success text-white mb-4" role="alert">
+                                        <div class="text-center">
+                                            <i class="fas fa-check-circle fa-3x mb-3"></i>
+                                            <h4 class="text-white">Recebimento realizado com sucesso!</h4>
+                                        </div>
+                                    </div>
+                                    
+                                    {% else %}
+                                    <!-- Erro -->
+                                    <div class="alert alert-danger text-white mb-4" role="alert">
+                                        <div class="text-center">
+                                            <i class="fas fa-times-circle fa-3x mb-3"></i>
+                                            <h5 class="text-white">Documento e/ou PIN informado está incorreto!</h5>
+                                            <p class="text-white mb-0">Atenção: se esse processo não for concluído, os pallets mencionados poderão ser cobrados do responsável pela entrega!</p>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <div class="text-center">
+                                        <a href="{{ url_for('publico.validacao_pin') }}" class="btn btn-lg btn-secondary btn-lg w-100 mb-0">
+                                            Nova Validação
+                                        </a>
+                                    </div>
+                                    {% endif %}
+                                    
+                                </div>
+                            </div>
+                        </div>
+                     
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <!-- Core JS Files -->
+    <script src="{{ url_for('static', filename='js/core/popper.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/core/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/argon-dashboard.min.js') }}"></script>
+</body>
+</html>

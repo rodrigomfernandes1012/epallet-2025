@@ -1,0 +1,87 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Perfil{% endblock %}
+{% block breadcrumb %}Perfil{% endblock %}
+{% block page_title %}Perfil do Usuário{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header pb-0">
+                <div class="d-flex align-items-center">
+                    <p class="mb-0">Informações do Perfil</p>
+                </div>
+            </div>
+            <div class="card-body">
+                <p class="text-uppercase text-sm">Informações do Usuário</p>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="username" class="form-control-label">Nome de Usuário</label>
+                            <input class="form-control" type="text" value="{{ current_user.username }}" readonly>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="email" class="form-control-label">Email</label>
+                            <input class="form-control" type="email" value="{{ current_user.email }}" readonly>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label for="nome_completo" class="form-control-label">Nome Completo</label>
+                            <input class="form-control" type="text" value="{{ current_user.nome_completo }}" readonly>
+                        </div>
+                    </div>
+                </div>
+                <hr class="horizontal dark">
+                <p class="text-uppercase text-sm">Informações da Conta</p>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="data_criacao" class="form-control-label">Data de Cadastro</label>
+                            <input class="form-control" type="text" value="{{ current_user.data_criacao.strftime('%d/%m/%Y %H:%M') }}" readonly>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="status" class="form-control-label">Status</label>
+                            <input class="form-control" type="text" value="{% if current_user.ativo %}Ativo{% else %}Inativo{% endif %}" readonly>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-profile">
+            <img src="https://raw.githubusercontent.com/creativetimofficial/public-assets/master/argon-dashboard-pro/assets/img/profile-layout-header.jpg" alt="Image placeholder" class="card-img-top">
+            <div class="row justify-content-center">
+                <div class="col-4 col-lg-4 order-lg-2">
+                    <div class="mt-n4 mt-lg-n6 mb-4 mb-lg-0">
+                        <a href="javascript:;">
+                            <div class="icon icon-shape bg-gradient-primary shadow text-center border-radius-lg" style="width: 80px; height: 80px;">
+                                <i class="fas fa-user text-lg opacity-10" aria-hidden="true" style="font-size: 2.5rem; line-height: 80px;"></i>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body pt-0">
+                <div class="text-center mt-4">
+                    <h5>
+                        {{ current_user.nome_completo }}
+                    </h5>
+                    <div class="h6 font-weight-300">
+                        <i class="ni location_pin mr-2"></i>{{ current_user.email }}
+                    </div>
+                    <div class="h6 mt-4">
+                        <i class="ni business_briefcase-24 mr-2"></i>Usuário do Sistema
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,293 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Visualizar Empresa{% endblock %}
+{% block breadcrumb %}Empresas / Visualizar{% endblock %}
+{% block page_title %}Detalhes da Empresa{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header pb-0">
+                <div class="d-flex align-items-center">
+                    <h6 class="mb-0">{{ empresa.razao_social }}</h6>
+                    <div class="ms-auto">
+                        <a href="{{ url_for('empresas.editar', id=empresa.id) }}" class="btn btn-primary btn-sm me-2">
+                            <i class="fas fa-edit me-2"></i>Editar
+                        </a>
+                        <a href="{{ url_for('empresas.listar') }}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left me-2"></i>Voltar
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <p class="text-uppercase text-sm">Informações da Empresa</p>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-control-label">Razão Social</label>
+                            <p class="form-control-static">{{ empresa.razao_social }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="form-control-label">Nome Fantasia</label>
+                            <p class="form-control-static">{{ empresa.nome_fantasia or '-' }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-control-label">CNPJ</label>
+                            <p class="form-control-static">{{ empresa.cnpj }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-control-label">Inscrição Estadual</label>
+                            <p class="form-control-static">{{ empresa.inscricao_estadual or '-' }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-control-label">Inscrição Municipal</label>
+                            <p class="form-control-static">{{ empresa.inscricao_municipal or '-' }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr class="horizontal dark">
+                <p class="text-uppercase text-sm">Endereço</p>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label class="form-control-label">CEP</label>
+                            <p class="form-control-static">{{ empresa.cep or '-' }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-7">
+                        <div class="form-group">
+                            <label class="form-control-label">Logradouro</label>
+                            <p class="form-control-static">{{ empresa.logradouro or '-' }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label class="form-control-label">Número</label>
+                            <p class="form-control-static">{{ empresa.numero or '-' }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-control-label">Complemento</label>
+                            <p class="form-control-static">{{ empresa.complemento or '-' }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-control-label">Bairro</label>
+                            <p class="form-control-static">{{ empresa.bairro or '-' }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="form-control-label">Cidade/Estado</label>
+                            <p class="form-control-static">
+                                {% if empresa.cidade and empresa.estado %}
+                                    {{ empresa.cidade }}/{{ empresa.estado }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr class="horizontal dark">
+                <p class="text-uppercase text-sm">Contato</p>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label class="form-control-label">Telefone</label>
+                            <p class="form-control-static">{{ empresa.telefone or '-' }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label class="form-control-label">Celular</label>
+                            <p class="form-control-static">{{ empresa.celular or '-' }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label class="form-control-label">Email</label>
+                            <p class="form-control-static">{{ empresa.email or '-' }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label class="form-control-label">Site</label>
+                            <p class="form-control-static">
+                                {% if empresa.site %}
+                                    <a href="{{ empresa.site }}" target="_blank">{{ empresa.site }}</a>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr class="horizontal dark">
+                <p class="text-uppercase text-sm">Informações do Sistema</p>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label class="form-control-label">Status</label>
+                            <p class="form-control-static">
+                                {% if empresa.ativa %}
+                                    <span class="badge badge-sm bg-gradient-success">Ativa</span>
+                                {% else %}
+                                    <span class="badge badge-sm bg-gradient-secondary">Inativa</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label class="form-control-label">Data de Cadastro</label>
+                            <p class="form-control-static">{{ empresa.data_criacao.strftime('%d/%m/%Y %H:%M') }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label class="form-control-label">Última Atualização</label>
+                            <p class="form-control-static">
+                                {% if empresa.data_atualizacao %}
+                                    {{ empresa.data_atualizacao.strftime('%d/%m/%Y %H:%M') }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label class="form-control-label">Cadastrado Por</label>
+                            <p class="form-control-static">{{ empresa.criado_por.nome_completo }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Vales Pallet Relacionados -->
+        {% if empresa.tipo and (empresa.tipo.nome in ['Destinatário', 'Destinatario', 'Transportadora', 'Cliente'] or 'destinat' in empresa.tipo.nome.lower() or 'transport' in empresa.tipo.nome.lower() or 'client' in empresa.tipo.nome.lower()) %}
+        <div class="card mt-4">
+            <div class="card-header pb-0">
+                <h6 class="mb-0">
+                    <i class="fas fa-pallet me-2"></i>
+                    {% if 'destinat' in empresa.tipo.nome.lower() %}
+                        Vales Pallet - Recebimentos
+                    {% elif 'transport' in empresa.tipo.nome.lower() %}
+                        Vales Pallet - Transportes
+                    {% elif 'client' in empresa.tipo.nome.lower() %}
+                        Vales Pallet - Enviados
+                    {% endif %}
+                </h6>
+            </div>
+            <div class="card-body px-0 pt-0 pb-2">
+                {% if vales_pallet %}
+                <div class="table-responsive p-0">
+                    <table class="table align-items-center mb-0">
+                        <thead>
+                            <tr>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Documento</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">PIN</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Pallets</th>
+                                {% if 'destinat' in empresa.tipo.nome.lower() %}
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Cliente</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Transportadora</th>
+                                {% elif 'transport' in empresa.tipo.nome.lower() %}
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Cliente</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Destinatário</th>
+                                {% elif 'client' in empresa.tipo.nome.lower() %}
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Transportadora</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Destinatário</th>
+                                {% endif %}
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Data</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for vale in vales_pallet %}
+                            <tr>
+                                <td>
+                                    <p class="text-xs font-weight-bold mb-0">{{ vale.numero_documento }}</p>
+                                </td>
+                                <td>
+                                    <span class="badge badge-sm bg-gradient-info">{{ vale.pin }}</span>
+                                </td>
+                                <td class="align-middle text-center">
+                                    <span class="text-secondary text-xs font-weight-bold">{{ vale.quantidade_pallets }}</span>
+                                </td>
+                                {% if 'destinat' in empresa.tipo.nome.lower() %}
+                                <td>
+                                    <p class="text-xs font-weight-bold mb-0">{{ vale.cliente_nome }}</p>
+                                </td>
+                                <td>
+                                    <p class="text-xs font-weight-bold mb-0">{{ vale.transportadora_nome }}</p>
+                                </td>
+                                {% elif 'transport' in empresa.tipo.nome.lower() %}
+                                <td>
+                                    <p class="text-xs font-weight-bold mb-0">{{ vale.cliente_nome }}</p>
+                                </td>
+                                <td>
+                                    <p class="text-xs font-weight-bold mb-0">{{ vale.destinatario_nome }}</p>
+                                </td>
+                                {% elif 'client' in empresa.tipo.nome.lower() %}
+                                <td>
+                                    <p class="text-xs font-weight-bold mb-0">{{ vale.transportadora_nome }}</p>
+                                </td>
+                                <td>
+                                    <p class="text-xs font-weight-bold mb-0">{{ vale.destinatario_nome }}</p>
+                                </td>
+                                {% endif %}
+                                <td class="align-middle text-center text-sm">
+                                    <span class="text-secondary text-sm font-weight-bold">{{ vale.get_status_display() }}</span>
+                                </td>
+                                <td class="align-middle text-center">
+                                    <span class="text-secondary text-xs font-weight-bold">{{ vale.data_criacao.strftime('%d/%m/%Y') }}</span>
+                                    <br>
+                                    <span class="text-secondary text-xxs">{{ vale.data_criacao.strftime('%H:%M') }}</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-4">
+                    <p class="text-muted mb-0">
+                        <i class="fas fa-inbox fa-2x mb-3 d-block"></i>
+                        {% if 'destinat' in empresa.tipo.nome.lower() %}
+                            Nenhum vale pallet recebido ainda.
+                        {% elif 'transport' in empresa.tipo.nome.lower() %}
+                            Nenhum vale pallet transportado ainda.
+                        {% elif 'client' in empresa.tipo.nome.lower() %}
+                            Nenhum vale pallet enviado ainda.
+                        {% endif %}
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+        
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,163 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Relatório de Movimentação{% endblock %}
+{% block breadcrumb %}Relatórios / Movimentação{% endblock %}
+{% block page_title %}Relatório de Movimentação de Pallets{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-header pb-0">
+                <div class="row">
+                    <div class="col-6">
+                        <h6>Movimentação Agrupada por Destinatário</h6>
+                    </div>
+                    <div class="col-6 text-end">
+                        <button class="btn btn-sm btn-success" onclick="window.print()">
+                            <i class="fas fa-print me-2"></i>Imprimir
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body px-0 pt-0 pb-2">
+                
+                {% if dados_relatorio %}
+                    {% for dados in dados_relatorio %}
+                    <!-- Destinatário -->
+                    <div class="px-4 pt-4">
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card bg-gradient-primary mb-3">
+                                    <div class="card-body p-3">
+                                        <div class="row">
+                                            <div class="col-8">
+                                                <h5 class="text-white mb-0">
+                                                    <i class="fas fa-building me-2"></i>
+                                                    {{ dados.destinatario.nome_fantasia or dados.destinatario.razao_social }}
+                                                </h5>
+                                                <p class="text-white text-sm mb-0 opacity-8">
+                                                    CNPJ: {{ dados.destinatario.cnpj }}
+                                                </p>
+                                            </div>
+                                            <div class="col-4 text-end">
+                                                <div class="text-white">
+                                                    <h6 class="text-white mb-0">{{ dados.total_vales }} Vale(s)</h6>
+                                                    <h4 class="text-white mb-0">{{ dados.total_pallets }} Pallets</h4>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Tabela de Vales -->
+                        <div class="table-responsive p-0 mb-4">
+                            <table class="table align-items-center mb-0">
+                                <thead>
+                                    <tr>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Documento</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">PIN</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Cliente</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Transportadora</th>
+                                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Pallets</th>
+                                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
+                                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Data</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for vale in dados.vales %}
+                                    <tr>
+                                        <td>
+                                            <p class="text-xs font-weight-bold mb-0">{{ vale.numero_documento }}</p>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-sm bg-gradient-info">{{ vale.pin }}</span>
+                                        </td>
+                                        <td>
+                                            <p class="text-xs font-weight-bold mb-0">{{ vale.cliente_nome }}</p>
+                                        </td>
+                                        <td>
+                                            <p class="text-xs font-weight-bold mb-0">{{ vale.transportadora_nome }}</p>
+                                        </td>
+                                        <td class="align-middle text-center">
+                                            <span class="text-secondary text-xs font-weight-bold">{{ vale.quantidade_pallets }}</span>
+                                        </td>
+                                        <td class="align-middle text-center text-sm">
+                                            <span class="text-secondary text-sm font-weight-bold">{{ vale.get_status_display() }}</span>
+                                        </td>
+                                        <td class="align-middle text-center">
+                                            <span class="text-secondary text-xs font-weight-bold">{{ vale.data_criacao.strftime('%d/%m/%Y') }}</span>
+                                            <br>
+                                            <span class="text-secondary text-xxs">{{ vale.data_criacao.strftime('%H:%M') }}</span>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    <!-- Subtotal -->
+                                    <tr class="bg-gradient-light">
+                                        <td colspan="4" class="text-end">
+                                            <p class="text-sm font-weight-bold mb-0">Subtotal {{ dados.destinatario.nome_fantasia or dados.destinatario.razao_social }}:</p>
+                                        </td>
+                                        <td class="align-middle text-center">
+                                            <span class="text-dark text-sm font-weight-bold">{{ dados.total_pallets }}</span>
+                                        </td>
+                                        <td colspan="2" class="align-middle text-center">
+                                            <span class="text-dark text-sm font-weight-bold">{{ dados.total_vales }} vale(s)</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    <!-- Total Geral -->
+                    <div class="px-4 pb-4">
+                        <div class="card bg-gradient-success">
+                            <div class="card-body p-4">
+                                <div class="row">
+                                    <div class="col-12 text-center">
+                                        <h4 class="text-white mb-3">
+                                            <i class="fas fa-calculator me-2"></i>
+                                            TOTAL GERAL
+                                        </h4>
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <h2 class="text-white mb-0">{{ total_geral_pallets }}</h2>
+                                                <p class="text-white text-sm mb-0 opacity-8">Total de Pallets</p>
+                                            </div>
+                                            <div class="col-6">
+                                                <h2 class="text-white mb-0">{{ total_geral_vales }}</h2>
+                                                <p class="text-white text-sm mb-0 opacity-8">Total de Vales</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                {% else %}
+                    <div class="px-4 py-5 text-center">
+                        <i class="fas fa-inbox fa-3x text-secondary mb-3"></i>
+                        <p class="text-secondary mb-0">Nenhuma movimentação encontrada.</p>
+                    </div>
+                {% endif %}
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@media print {
+    .sidebar, .navbar, .btn, .page-header {
+        display: none !important;
+    }
+    .card {
+        page-break-inside: avoid;
+    }
+}
+</style>
+{% endblock %}

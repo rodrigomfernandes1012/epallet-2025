@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='assets/img/favicon.png') }}">
+    <title>{% block title %}Sistema de Gestão Epallet{% endblock %}</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet">
+    
+    <!-- Icons -->
+    <link href="{{ url_for('static', filename='assets/css/nucleo-icons.css') }}" rel="stylesheet" />
+    <link href="{{ url_for('static', filename='assets/css/nucleo-svg.css') }}" rel="stylesheet" />
+    
+    <!-- Font Awesome Icons -->
+    <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
+    
+    <!-- CSS Files -->
+    <link id="pagestyle" href="{{ url_for('static', filename='assets/css/argon-dashboard.css') }}" rel="stylesheet" />
+    
+    <style>
+        .public-header {
+            background: linear-gradient(87deg, #5e72e4 0, #825ee4 100%);
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        .public-card {
+            box-shadow: 0 20px 27px 0 rgba(0,0,0,.05);
+        }
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+        .step-item {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+        .step-item:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            width: 100%;
+            height: 2px;
+            background: #e9ecef;
+            z-index: -1;
+        }
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e9ecef;
+            color: #8898aa;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        .step-item.active .step-circle {
+            background: linear-gradient(87deg, #5e72e4 0, #825ee4 100%);
+            color: white;
+        }
+        .step-item.completed .step-circle {
+            background: #2dce89;
+            color: white;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100">
+    
+    <!-- Header Público -->
+    <div class="public-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h1 class="text-white mb-0">
+                        <i class="fas fa-pallet me-2"></i>
+                        {% block header_title %}Sistema de Gestão Epallet de Pallets{% endblock %}
+                    </h1>
+                    <p class="text-white text-sm opacity-8 mb-0 mt-2">
+                        {% block header_subtitle %}Acesso Público - Sem necessidade de login{% endblock %}
+                    </p>
+                </div>
+                <div class="col-lg-4 text-end">
+                    <a href="{{ url_for('auth.login') }}" class="btn btn-white btn-sm">
+                        <i class="fas fa-sign-in-alt me-2"></i>Fazer Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Conteúdo Principal -->
+    <div class="container pb-5">
+        {% block content %}{% endblock %}
+    </div>
+    
+    <!-- Footer -->
+    <footer class="footer pt-3 pb-4">
+        <div class="container">
+            <div class="row align-items-center justify-content-lg-between">
+                <div class="col-lg-6 mb-lg-0 mb-4">
+                    <div class="copyright text-center text-sm text-muted text-lg-start">
+                        © <script>document.write(new Date().getFullYear())</script>
+                        Sistema de Gestão Epallet de Pallets - 
+                        <i class="fa fa-shield-alt text-primary"></i> Acesso Seguro
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <ul class="nav nav-footer justify-content-center justify-content-lg-end">
+                        <li class="nav-item">
+                            <a href="{{ url_for('publico.confirmacao_recebimento') }}" class="nav-link text-muted">
+                                Confirmação
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ url_for('publico.validacao_pin') }}" class="nav-link text-muted">
+                                Validação
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ url_for('auth.login') }}" class="nav-link pe-0 text-muted">
+                                Login
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Core JS Files -->
+    <script src="{{ url_for('static', filename='assets/js/core/popper.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='assets/js/core/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='assets/js/plugins/perfect-scrollbar.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='assets/js/plugins/smooth-scrollbar.min.js') }}"></script>
+    
+    <!-- Argon Dashboard -->
+    <script src="{{ url_for('static', filename='assets/js/argon-dashboard.min.js') }}"></script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

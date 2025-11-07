@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Cadastro - Sistema de Gestão Epallet</title>
+    
+    <!-- Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Argon CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/argon-dashboard.min.css') }}">
+</head>
+<body class="">
+    <main class="main-content mt-0">
+        <section class="min-vh-100 mb-8">
+            <div class="page-header align-items-start min-vh-50 pt-5 pb-11 m-3 border-radius-lg bg-gradient-primary">
+                <span class="mask bg-gradient-dark opacity-6"></span>
+                <div class="container">
+                    <div class="row justify-content-center">
+                        <div class="col-lg-5 text-center mx-auto">
+                            <h1 class="text-white mb-2 mt-5">Bem-vindo!</h1>
+                            <p class="text-lead text-white">Crie sua conta para começar a gerenciar suas empresas.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="container">
+                <div class="row mt-lg-n10 mt-md-n11 mt-n10">
+                    <div class="col-xl-6 col-lg-7 col-md-9 mx-auto">
+                        <div class="card z-index-0">
+                            <div class="card-header text-center pt-4">
+                                <h5>Cadastre-se</h5>
+                            </div>
+                            <div class="card-body">
+                                
+                                <!-- Flash Messages -->
+                                {% with messages = get_flashed_messages(with_categories=true) %}
+                                    {% if messages %}
+                                        {% for category, message in messages %}
+                                            <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                                <span class="alert-text">{{ message }}</span>
+                                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                        {% endfor %}
+                                    {% endif %}
+                                {% endwith %}
+                                
+                                <form role="form" method="POST" action="{{ url_for('auth.register') }}">
+                                    {{ form.hidden_tag() }}
+                                    
+                                    <div class="mb-3">
+                                        {{ form.nome_completo.label(class="form-label") }}
+                                        {{ form.nome_completo(class="form-control", placeholder="Nome Completo") }}
+                                        {% if form.nome_completo.errors %}
+                                            <div class="text-danger text-sm">
+                                                {% for error in form.nome_completo.errors %}
+                                                    <span>{{ error }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        {{ form.username.label(class="form-label") }}
+                                        {{ form.username(class="form-control", placeholder="Nome de Usuário") }}
+                                        {% if form.username.errors %}
+                                            <div class="text-danger text-sm">
+                                                {% for error in form.username.errors %}
+                                                    <span>{{ error }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        {{ form.email.label(class="form-label") }}
+                                        {{ form.email(class="form-control", placeholder="Email") }}
+                                        {% if form.email.errors %}
+                                            <div class="text-danger text-sm">
+                                                {% for error in form.email.errors %}
+                                                    <span>{{ error }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        {{ form.password.label(class="form-label") }}
+                                        {{ form.password(class="form-control", placeholder="Senha") }}
+                                        {% if form.password.errors %}
+                                            <div class="text-danger text-sm">
+                                                {% for error in form.password.errors %}
+                                                    <span>{{ error }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        {{ form.password2.label(class="form-label") }}
+                                        {{ form.password2(class="form-control", placeholder="Confirmar Senha") }}
+                                        {% if form.password2.errors %}
+                                            <div class="text-danger text-sm">
+                                                {% for error in form.password2.errors %}
+                                                    <span>{{ error }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="text-center">
+                                        {{ form.submit(class="btn btn-primary w-100 my-4 mb-2") }}
+                                    </div>
+                                    
+                                    <p class="text-sm mt-3 mb-0">
+                                        Já tem uma conta? 
+                                        <a href="{{ url_for('auth.login') }}" class="text-dark font-weight-bolder">Faça login</a>
+                                    </p>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <!-- Core JS Files -->
+    <script src="{{ url_for('static', filename='js/core/popper.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/core/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/argon-dashboard.min.js') }}"></script>
+</body>
+</html>

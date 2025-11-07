@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Confirmação de Recebimento - Sistema de Gestão Epallet</title>
+    
+    <!-- Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Argon CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/argon-dashboard.min.css') }}">
+</head>
+<body class="">
+    <main class="main-content mt-0">
+        <section>
+            <div class="page-header min-vh-100">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-xl-6 col-lg-7 col-md-9 d-flex flex-column mx-auto">
+                            <div class="card card-plain">
+                                <div class="card-header pb-0 text-start">
+                                    <h4 class="font-weight-bolder">Confirmação de Recebimento</h4>
+                                    <p class="mb-0">Informe os dados para confirmar o recebimento de pallets</p>
+                                </div>
+                                <div class="card-body">
+                                    
+                                    <!-- Flash Messages -->
+                                    {% with messages = get_flashed_messages(with_categories=true) %}
+                                        {% if messages %}
+                                            {% for category, message in messages %}
+                                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                                    <span class="alert-text">{{ message }}</span>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endwith %}
+                                    
+                                    {% if not vale %}
+                                    <!-- Formulário de Busca -->
+                                    <form role="form" method="POST">
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">Cliente</label>
+                                            <select name="cliente_id" class="form-control form-control-lg" required>
+                                                <option value="">Selecione o cliente</option>
+                                                {% for cliente in clientes %}
+                                                    <option value="{{ cliente.id }}">{{ cliente.nome_fantasia or cliente.razao_social }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">Transportadora</label>
+                                            <select name="transportadora_id" class="form-control form-control-lg" required>
+                                                <option value="">Selecione a transportadora</option>
+                                                {% for transportadora in transportadoras %}
+                                                    <option value="{{ transportadora.id }}">{{ transportadora.nome_fantasia or transportadora.razao_social }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">Número do Documento</label>
+                                            <input type="text" name="numero_documento" class="form-control form-control-lg" placeholder="Digite o número do documento" required>
+                                        </div>
+                                        
+                                        <div class="text-center">
+                                            <button type="submit" name="acao" value="buscar" class="btn btn-lg btn-primary btn-lg w-100 mt-4 mb-0">
+                                                Buscar Vale
+                                            </button>
+                                        </div>
+                                    </form>
+                                    {% else %}
+                                    <!-- Resultado da Busca -->
+                                    <div class="alert alert-success text-white mb-4" role="alert">
+                                        <strong>Vale Encontrado!</strong>
+                                    </div>
+                                    
+                                    <div class="card bg-gradient-light mb-4">
+                                        <div class="card-body">
+                                            <p class="text-dark mb-3">
+                                                <strong>{{ vale.destinatario_nome }}</strong>, estou recebendo de: <strong>{{ vale.cliente_nome }}</strong> 
+                                                através da transportadora: <strong>{{ vale.transportadora_nome }}</strong> 
+                                                a quantidade de <strong>{{ vale.quantidade_pallets }} pallets</strong> nesta data: <strong>{{ now.strftime('%d/%m/%Y %H:%M') }}</strong>, 
+                                                sabendo que deverei devolver a mesma quantidade de pallets.
+                                            </p>
+                                            <p class="text-dark mb-0">
+                                                Para validar essa operação, estou informando o número do PIN <strong class="text-primary" style="font-size: 1.5rem;">{{ vale.pin }}</strong> ao motorista.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    
+                                    <form method="POST" action="{{ url_for('publico.confirmar_entrega', vale_id=vale.id) }}">
+                                        <div class="text-center">
+                                            <button type="submit" class="btn btn-lg btn-success btn-lg w-100 mt-2 mb-2">
+                                                Confirmar Entrega de Pallets
+                                            </button>
+                                            <a href="{{ url_for('publico.confirmacao_recebimento') }}" class="btn btn-lg btn-secondary btn-lg w-100 mb-0">
+                                                Voltar
+                                            </a>
+                                        </div>
+                                    </form>
+                                    {% endif %}
+                                    
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <!-- Core JS Files -->
+    <script src="{{ url_for('static', filename='js/core/popper.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/core/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/argon-dashboard.min.js') }}"></script>
+</body>
+</html>

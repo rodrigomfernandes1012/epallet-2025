@@ -1,0 +1,165 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Empresas{% endblock %}
+{% block breadcrumb %}Empresas{% endblock %}
+{% block page_title %}Gerenciar Empresas{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-header pb-0">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h6>Lista de Empresas</h6>
+                    <a href="{{ url_for('empresas.nova') }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus me-2"></i>Nova Empresa
+                    </a>
+                </div>
+            </div>
+            <div class="card-body px-0 pt-0 pb-2">
+                <div class="table-responsive p-0">
+                    <table class="table align-items-center mb-0">
+                        <thead>
+                            <tr>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Empresa</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">CNPJ</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Cidade/Estado</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Data Cadastro</th>
+                                <th class="text-secondary opacity-7"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if empresas.items %}
+                                {% for empresa in empresas.items %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex px-2 py-1">
+                                            <div>
+                                                <div class="icon icon-shape icon-sm shadow border-radius-md bg-gradient-warning text-center me-2 d-flex align-items-center justify-content-center">
+                                                    <i class="fas fa-building text-white opacity-10"></i>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex flex-column justify-content-center">
+                                                <h6 class="mb-0 text-sm">{{ empresa.razao_social }}</h6>
+                                                {% if empresa.nome_fantasia %}
+                                                <p class="text-xs text-secondary mb-0">{{ empresa.nome_fantasia }}</p>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <p class="text-xs font-weight-bold mb-0">{{ empresa.cnpj }}</p>
+                                        {% if empresa.email %}
+                                        <p class="text-xs text-secondary mb-0">{{ empresa.email }}</p>
+                                        {% endif %}
+                                    </td>
+                                    <td class="align-middle text-center text-sm">
+                                        {% if empresa.cidade and empresa.estado %}
+                                        <span class="text-secondary text-xs font-weight-bold">{{ empresa.cidade }}/{{ empresa.estado }}</span>
+                                        {% else %}
+                                        <span class="text-secondary text-xs">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="align-middle text-center text-sm">
+                                        {% if empresa.ativa %}
+                                        <span class="badge badge-sm bg-gradient-success">Ativa</span>
+                                        {% else %}
+                                        <span class="badge badge-sm bg-gradient-secondary">Inativa</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="align-middle text-center">
+                                        <span class="text-secondary text-xs font-weight-bold">{{ empresa.data_criacao.strftime('%d/%m/%Y') }}</span>
+                                    </td>
+                                    <td class="align-middle">
+                                        <a href="{{ url_for('empresas.visualizar', id=empresa.id) }}" class="text-secondary font-weight-bold text-xs me-2" data-toggle="tooltip" title="Ver detalhes">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ url_for('empresas.editar', id=empresa.id) }}" class="text-secondary font-weight-bold text-xs me-2" data-toggle="tooltip" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="javascript:void(0)" onclick="confirmarExclusao({{ empresa.id }})" class="text-danger font-weight-bold text-xs" data-toggle="tooltip" title="Excluir">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-4">
+                                        <p class="text-sm text-secondary mb-0">Nenhuma empresa cadastrada ainda.</p>
+                                        <a href="{{ url_for('empresas.nova') }}" class="btn btn-sm btn-primary mt-2">Cadastrar Primeira Empresa</a>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            {% if empresas.pages > 1 %}
+            <div class="card-footer">
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        {% if empresas.has_prev %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('empresas.listar', page=empresas.prev_num) }}">Anterior</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">Anterior</span>
+                        </li>
+                        {% endif %}
+                        
+                        {% for page_num in empresas.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                            {% if page_num %}
+                                {% if page_num == empresas.page %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ page_num }}</span>
+                                </li>
+                                {% else %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('empresas.listar', page=page_num) }}">{{ page_num }}</a>
+                                </li>
+                                {% endif %}
+                            {% else %}
+                                <li class="page-item disabled"><span class="page-link">...</span></li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if empresas.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('empresas.listar', page=empresas.next_num) }}">Próximo</a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">Próximo</span>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Form para exclusão -->
+<form id="formExcluir" method="POST" style="display: none;">
+    {% if csrf_token %}
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    {% endif %}
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function confirmarExclusao(empresaId) {
+    if (confirm('Tem certeza que deseja excluir esta empresa? Esta ação não pode ser desfeita.')) {
+        var form = document.getElementById('formExcluir');
+        form.action = '/empresas/' + empresaId + '/excluir';
+        form.submit();
+    }
+}
+</script>
+{% endblock %}

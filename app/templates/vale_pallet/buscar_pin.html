@@ -1,0 +1,53 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Buscar Vale Pallet por PIN - Argon Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header pb-0">
+                    <div class="d-flex align-items-center">
+                        <h6 class="mb-0">Buscar Vale Pallet por PIN</h6>
+                        <a href="{{ url_for('vale_pallet.listar') }}" class="btn btn-secondary btn-sm ms-auto">
+                            <i class="fas fa-arrow-left"></i> Voltar
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="form-group">
+                            <label class="form-control-label">Digite o PIN de 4 dígitos</label>
+                            <input type="text" name="pin" class="form-control form-control-lg text-center" placeholder="0000" maxlength="4" pattern="[0-9]{4}" required autofocus style="font-size: 2rem; letter-spacing: 1rem;">
+                            <small class="form-text text-muted">Digite apenas números (4 dígitos)</small>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-search"></i> Buscar
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <hr class="horizontal dark my-4">
+                    
+                    <div class="text-center">
+                        <p class="text-sm text-secondary mb-2">Ou acesse diretamente:</p>
+                        <a href="{{ url_for('vale_pallet.listar') }}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-list"></i> Ver Todos os Vales
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-formatar input para aceitar apenas números
+document.querySelector('input[name="pin"]').addEventListener('input', function(e) {
+    this.value = this.value.replace(/[^0-9]/g, '');
+});
+</script>
+{% endblock %}

@@ -1,0 +1,136 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Vale Pallet - Argon Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+                    <h6>Lista de Vales Pallet</h6>
+                    <div>
+                        <a href="{{ url_for('vale_pallet.buscar_pin') }}" class="btn btn-info btn-sm me-2">
+                            <i class="fas fa-search"></i> Buscar por PIN
+                        </a>
+                        <a href="{{ url_for('vale_pallet.novo') }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus"></i> Novo Vale Pallet
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body px-0 pt-0 pb-2">
+                    <div class="table-responsive p-0">
+                        <table class="table align-items-center mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">PIN</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Documento</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Cliente</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Transportadora</th>
+                                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Pallets</th>
+                                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
+                                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Data</th>
+                                    <th class="text-secondary opacity-7"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for vale in vales.items %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex px-3 py-1">
+                                            <div class="d-flex flex-column justify-content-center">
+                                                <h6 class="mb-0 text-sm font-weight-bold">{{ vale.pin }}</h6>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <p class="text-xs font-weight-bold mb-0">{{ vale.numero_documento }}</p>
+                                    </td>
+                                    <td>
+                                        <p class="text-xs text-secondary mb-0">{{ vale.cliente.razao_social }}</p>
+                                    </td>
+                                    <td>
+                                        <p class="text-xs text-secondary mb-0">{{ vale.transportadora.razao_social }}</p>
+                                    </td>
+                                    <td class="align-middle text-center">
+                                        <span class="text-secondary text-sm font-weight-bold">{{ vale.quantidade_pallets }}</span>
+                                    </td>
+                                    <td class="align-middle text-center text-sm">
+                                        <span class="text-secondary text-sm font-weight-bold">{{ vale.get_status_display() }}</span>
+                                    </td>
+                                    <td class="align-middle text-center">
+                                        <span class="text-secondary text-xs font-weight-bold">{{ vale.data_criacao.strftime('%d/%m/%Y') }}</span>
+                                    </td>
+                                    <td class="align-middle">
+                                        <a href="{{ url_for('vale_pallet.visualizar', id=vale.id) }}" class="text-secondary font-weight-bold text-xs" title="Ver detalhes">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        {% if vale.status == 'pendente_entrega' %}
+                                        |
+                                        <a href="{{ url_for('vale_pallet.editar', id=vale.id) }}" class="text-secondary font-weight-bold text-xs" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="8" class="text-center py-4">
+                                        <p class="text-secondary mb-0">Nenhum vale pallet cadastrado.</p>
+                                        <a href="{{ url_for('vale_pallet.novo') }}" class="btn btn-primary btn-sm mt-3">
+                                            <i class="fas fa-plus"></i> Criar Primeiro Vale Pallet
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Paginação -->
+                    {% if vales.pages > 1 %}
+                    <div class="card-footer pb-0">
+                        <nav aria-label="Paginação">
+                            <ul class="pagination justify-content-center">
+                                <!-- Botão Anterior -->
+                                <li class="page-item {% if not vales.has_prev %}disabled{% endif %}">
+                                    <a class="page-link" href="{% if vales.has_prev %}{{ url_for('vale_pallet.listar', page=vales.prev_num) }}{% else %}#{% endif %}">
+                                        <i class="fas fa-angle-left"></i>
+                                        <span class="sr-only">Anterior</span>
+                                    </a>
+                                </li>
+                                
+                                <!-- Números das páginas -->
+                                {% for page_num in vales.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                                    {% if page_num %}
+                                        <li class="page-item {% if page_num == vales.page %}active{% endif %}">
+                                            <a class="page-link" href="{{ url_for('vale_pallet.listar', page=page_num) }}">{{ page_num }}</a>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item disabled">
+                                            <span class="page-link">...</span>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                <!-- Botão Próximo -->
+                                <li class="page-item {% if not vales.has_next %}disabled{% endif %}">
+                                    <a class="page-link" href="{% if vales.has_next %}{{ url_for('vale_pallet.listar', page=vales.next_num) }}{% else %}#{% endif %}">
+                                        <i class="fas fa-angle-right"></i>
+                                        <span class="sr-only">Próximo</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+                        <p class="text-center text-sm text-secondary mb-0">
+                            Mostrando {{ vales.items|length }} de {{ vales.total }} vales (Página {{ vales.page }} de {{ vales.pages }})
+                        </p>
+                    </div>
+                    {% endif %}
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

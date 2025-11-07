@@ -1,0 +1,128 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}{{ titulo }} - Argon Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header pb-0">
+                    <div class="d-flex align-items-center">
+                        <h6 class="mb-0">{{ titulo }}</h6>
+                        <a href="{{ url_for('vale_pallet.listar') }}" class="btn btn-secondary btn-sm ms-auto">
+                            <i class="fas fa-arrow-left"></i> Voltar
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        
+                        <p class="text-uppercase text-sm">Empresas Envolvidas</p>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    {{ form.cliente_id.label(class="form-control-label") }}
+                                    {{ form.cliente_id(class="form-select" + (" is-invalid" if form.cliente_id.errors else "")) }}
+                                    {% if form.cliente_id.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.cliente_id.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    {{ form.transportadora_id.label(class="form-control-label") }}
+                                    {{ form.transportadora_id(class="form-select" + (" is-invalid" if form.transportadora_id.errors else "")) }}
+                                    {% if form.transportadora_id.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.transportadora_id.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    {{ form.destinatario_id.label(class="form-control-label") }}
+                                    {{ form.destinatario_id(class="form-select" + (" is-invalid" if form.destinatario_id.errors else "")) }}
+                                    {% if form.destinatario_id.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.destinatario_id.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr class="horizontal dark">
+                        <p class="text-uppercase text-sm">Dados do Vale</p>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    {{ form.motorista_id.label(class="form-control-label") }}
+                                    {{ form.motorista_id(class="form-select" + (" is-invalid" if form.motorista_id.errors else "")) }}
+                                    {% if form.motorista_id.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.motorista_id.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">
+                                        <i class="fas fa-info-circle"></i> Ao selecionar um motorista, ele receberá uma mensagem WhatsApp automática.
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ form.numero_documento.label(class="form-control-label") }}
+                                    {{ form.numero_documento(class="form-control" + (" is-invalid" if form.numero_documento.errors else ""), placeholder="Ex: NF-12345") }}
+                                    {% if form.numero_documento.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.numero_documento.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ form.quantidade_pallets.label(class="form-control-label") }}
+                                    {{ form.quantidade_pallets(class="form-control" + (" is-invalid" if form.quantidade_pallets.errors else ""), placeholder="Ex: 10") }}
+                                    {% if form.quantidade_pallets.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.quantidade_pallets.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {% if vale %}
+                        <div class="alert alert-info">
+                            <strong>PIN:</strong> {{ vale.pin }} (o PIN não pode ser alterado)
+                        </div>
+                        {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> Um PIN de 4 dígitos será gerado automaticamente ao salvar.
+                        </div>
+                        {% endif %}
+                        
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                {{ form.submit(class="btn btn-primary") }}
+                                <a href="{{ url_for('vale_pallet.listar') }}" class="btn btn-secondary">Cancelar</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

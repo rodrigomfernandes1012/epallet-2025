@@ -1,0 +1,95 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Motoristas - Argon Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+                    <h6>Lista de Motoristas</h6>
+                    <a href="{{ url_for('motoristas.novo') }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> Novo Motorista
+                    </a>
+                </div>
+                <div class="card-body px-0 pt-0 pb-2">
+                    <div class="table-responsive p-0">
+                        <table class="table align-items-center mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Motorista</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">CPF</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Placa</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Transportadora</th>
+                                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
+                                    <th class="text-secondary opacity-7"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for motorista in motoristas %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex px-3 py-1">
+                                            <div>
+                                                <div class="icon icon-shape icon-sm bg-gradient-secondary shadow text-center border-radius-md">
+                                                    <i class="fas fa-id-card text-lg opacity-10" aria-hidden="true"></i>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex flex-column justify-content-center ms-3">
+                                                <h6 class="mb-0 text-sm">{{ motorista.nome }}</h6>
+                                                <p class="text-xs text-secondary mb-0">{{ motorista.celular or motorista.telefone or '-' }}</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <p class="text-xs font-weight-bold mb-0">{{ motorista.cpf }}</p>
+                                    </td>
+                                    <td>
+                                        <p class="text-xs font-weight-bold mb-0">{{ motorista.placa_caminhao }}</p>
+                                    </td>
+                                    <td>
+                                        <p class="text-xs text-secondary mb-0">{{ motorista.empresa_transportadora.razao_social }}</p>
+                                    </td>
+                                    <td class="align-middle text-center text-sm">
+                                        {% if motorista.ativo %}
+                                        <span class="badge badge-sm bg-gradient-success">Ativo</span>
+                                        {% else %}
+                                        <span class="badge badge-sm bg-gradient-secondary">Inativo</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="align-middle">
+                                        <a href="{{ url_for('motoristas.visualizar', id=motorista.id) }}" class="text-secondary font-weight-bold text-xs" title="Ver detalhes">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        |
+                                        <a href="{{ url_for('motoristas.editar', id=motorista.id) }}" class="text-secondary font-weight-bold text-xs" title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        |
+                                        <form method="POST" action="{{ url_for('motoristas.excluir', id=motorista.id) }}" style="display: inline;" onsubmit="return confirm('Tem certeza que deseja excluir este motorista?');">
+                                            <button type="submit" class="btn btn-link text-danger font-weight-bold text-xs p-0 m-0" style="text-decoration: none;" title="Excluir">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-4">
+                                        <p class="text-secondary mb-0">Nenhum motorista cadastrado.</p>
+                                        <a href="{{ url_for('motoristas.novo') }}" class="btn btn-primary btn-sm mt-3">
+                                            <i class="fas fa-plus"></i> Cadastrar Primeiro Motorista
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

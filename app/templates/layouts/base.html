@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>{% block title %}Sistema de Gestão Epallet{% endblock %}</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" href="{{ url_for('static', filename='img/brand/favicon.png') }}" type="image/png">
+    
+    <!-- Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700">
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/nucleo-icons.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/nucleo-svg.css') }}">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Argon CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/argon-dashboard.min.css') }}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="g-sidenav-show bg-gray-100">
+    
+    {% if current_user.is_authenticated %}
+        <!-- Sidebar -->
+        {% include 'includes/sidebar.html' %}
+    {% endif %}
+    
+    <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg">
+        
+        {% if current_user.is_authenticated %}
+            <!-- Navbar -->
+            {% include 'includes/navbar.html' %}
+        {% endif %}
+        
+        <!-- Content -->
+        <div class="container-fluid py-4">
+            
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                            <span class="alert-icon"><i class="ni ni-{% if category == 'success' %}check-bold{% elif category == 'danger' or category == 'error' %}fat-remove{% elif category == 'warning' %}bell-55{% else %}info-circle{% endif %}"></i></span>
+                            <span class="alert-text">{{ message }}</span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            <!-- Page Content -->
+            {% block content %}{% endblock %}
+            
+            <!-- Footer -->
+            {% if current_user.is_authenticated %}
+                {% include 'includes/footer.html' %}
+            {% endif %}
+        </div>
+    </main>
+    
+    <!-- Core JS Files -->
+    <script src="{{ url_for('static', filename='js/core/popper.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/core/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/plugins/perfect-scrollbar.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/plugins/smooth-scrollbar.min.js') }}"></script>
+    
+    <!-- Argon Dashboard JS -->
+    <script src="{{ url_for('static', filename='js/argon-dashboard.min.js') }}"></script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

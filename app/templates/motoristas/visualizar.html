@@ -1,0 +1,113 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Visualizar Motorista - Argon Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header pb-0">
+                    <div class="d-flex align-items-center">
+                        <h6 class="mb-0">{{ motorista.nome }}</h6>
+                        <a href="{{ url_for('motoristas.editar', id=motorista.id) }}" class="btn btn-primary btn-sm ms-auto me-2">
+                            <i class="fas fa-edit"></i> Editar
+                        </a>
+                        <a href="{{ url_for('motoristas.listar') }}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left"></i> Voltar
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="text-uppercase text-sm">Informações do Motorista</p>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="form-control-label">Nome Completo</label>
+                                <p class="form-control-static">{{ motorista.nome }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="form-control-label">CPF</label>
+                                <p class="form-control-static">{{ motorista.cpf }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="form-control-label">Placa do Caminhão</label>
+                                <p class="form-control-static">{{ motorista.placa_caminhao }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label class="form-control-label">Transportadora</label>
+                                <p class="form-control-static">
+                                    <a href="{{ url_for('empresas.visualizar', id=motorista.empresa_id) }}">
+                                        {{ motorista.empresa_transportadora.razao_social }}
+                                    </a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr class="horizontal dark">
+                    <p class="text-uppercase text-sm">Contato</p>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-control-label">Telefone</label>
+                                <p class="form-control-static">{{ motorista.telefone or '-' }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-control-label">Celular</label>
+                                <p class="form-control-static">{{ motorista.celular or '-' }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-control-label">Email</label>
+                                <p class="form-control-static">{{ motorista.email or '-' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr class="horizontal dark">
+                    <p class="text-uppercase text-sm">Informações do Sistema</p>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-control-label">Status</label>
+                                <p class="form-control-static">
+                                    {% if motorista.ativo %}
+                                    <span class="badge badge-sm bg-gradient-success">Ativo</span>
+                                    {% else %}
+                                    <span class="badge badge-sm bg-gradient-secondary">Inativo</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-control-label">Data de Cadastro</label>
+                                <p class="form-control-static">{{ motorista.data_criacao.strftime('%d/%m/%Y %H:%M') }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="form-control-label">Última Atualização</label>
+                                <p class="form-control-static">{{ motorista.data_atualizacao.strftime('%d/%m/%Y %H:%M') if motorista.data_atualizacao else '-' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

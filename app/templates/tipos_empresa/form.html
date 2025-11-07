@@ -1,0 +1,76 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}{{ titulo }} - Argon Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header pb-0">
+                    <div class="d-flex align-items-center">
+                        <h6 class="mb-0">{{ titulo }}</h6>
+                        <a href="{{ url_for('tipos_empresa.listar') }}" class="btn btn-secondary btn-sm ms-auto">
+                            <i class="fas fa-arrow-left"></i> Voltar
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="form-group">
+                                    {{ form.nome.label(class="form-control-label") }}
+                                    {{ form.nome(class="form-control" + (" is-invalid" if form.nome.errors else ""), placeholder="Ex: Cliente, Transportadora, Destinatário") }}
+                                    {% if form.nome.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.nome.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label class="form-control-label">&nbsp;</label>
+                                    <div class="form-check form-switch">
+                                        {{ form.ativo(class="form-check-input") }}
+                                        {{ form.ativo.label(class="form-check-label") }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    {{ form.descricao.label(class="form-control-label") }}
+                                    {{ form.descricao(class="form-control" + (" is-invalid" if form.descricao.errors else ""), placeholder="Descrição do tipo de empresa") }}
+                                    {% if form.descricao.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.descricao.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                {{ form.submit(class="btn btn-primary") }}
+                                <a href="{{ url_for('tipos_empresa.listar') }}" class="btn btn-secondary">Cancelar</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

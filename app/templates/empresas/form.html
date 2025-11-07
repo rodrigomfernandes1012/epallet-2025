@@ -1,0 +1,203 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}{{ titulo }}{% endblock %}
+{% block breadcrumb %}Empresas / {{ titulo }}{% endblock %}
+{% block page_title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header pb-0">
+                <div class="d-flex align-items-center">
+                    <h6 class="mb-0">{{ titulo }}</h6>
+                    <a href="{{ url_for('empresas.listar') }}" class="btn btn-secondary btn-sm ms-auto">
+                        <i class="fas fa-arrow-left me-2"></i>Voltar
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="">
+                    {{ form.hidden_tag() }}
+                    
+                    <p class="text-uppercase text-sm">Informações da Empresa</p>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                {{ form.tipo_empresa_id.label(class="form-control-label") }}
+                                {{ form.tipo_empresa_id(class="form-select" + (" is-invalid" if form.tipo_empresa_id.errors else "")) }}
+                                {% if form.tipo_empresa_id.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.tipo_empresa_id.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.razao_social.label(class="form-control-label") }}
+                                {{ form.razao_social(class="form-control" + (" is-invalid" if form.razao_social.errors else "")) }}
+                                {% if form.razao_social.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.razao_social.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                {{ form.nome_fantasia.label(class="form-control-label") }}
+                                {{ form.nome_fantasia(class="form-control" + (" is-invalid" if form.nome_fantasia.errors else "")) }}
+                                {% if form.nome_fantasia.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.nome_fantasia.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.cnpj.label(class="form-control-label") }}
+                                {{ form.cnpj(class="form-control" + (" is-invalid" if form.cnpj.errors else ""), placeholder="00.000.000/0000-00") }}
+                                {% if form.cnpj.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.cnpj.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.inscricao_estadual.label(class="form-control-label") }}
+                                {{ form.inscricao_estadual(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.inscricao_municipal.label(class="form-control-label") }}
+                                {{ form.inscricao_municipal(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr class="horizontal dark">
+                    <p class="text-uppercase text-sm">Endereço</p>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                {{ form.cep.label(class="form-control-label") }}
+                                {{ form.cep(class="form-control", placeholder="00000-000") }}
+                            </div>
+                        </div>
+                        <div class="col-md-7">
+                            <div class="form-group">
+                                {{ form.logradouro.label(class="form-control-label") }}
+                                {{ form.logradouro(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                {{ form.numero.label(class="form-control-label") }}
+                                {{ form.numero(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.complemento.label(class="form-control-label") }}
+                                {{ form.complemento(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.bairro.label(class="form-control-label") }}
+                                {{ form.bairro(class="form-control") }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.cidade.label(class="form-control-label") }}
+                                {{ form.cidade(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                {{ form.estado.label(class="form-control-label") }}
+                                {{ form.estado(class="form-control") }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr class="horizontal dark">
+                    <p class="text-uppercase text-sm">Contato</p>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                {{ form.telefone.label(class="form-control-label") }}
+                                {{ form.telefone(class="form-control", placeholder="(00) 0000-0000") }}
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                {{ form.celular.label(class="form-control-label") }}
+                                {{ form.celular(class="form-control", placeholder="(00) 00000-0000") }}
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                {{ form.email.label(class="form-control-label") }}
+                                {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else "")) }}
+                                {% if form.email.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.email.errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                {{ form.site.label(class="form-control-label") }}
+                                {{ form.site(class="form-control", placeholder="https://") }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr class="horizontal dark">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-check form-switch">
+                                {{ form.ativa(class="form-check-input") }}
+                                {{ form.ativa.label(class="form-check-label") }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            {{ form.submit(class="btn btn-primary") }}
+                            <a href="{{ url_for('empresas.listar') }}" class="btn btn-secondary">Cancelar</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
