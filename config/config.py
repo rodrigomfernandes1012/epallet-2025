@@ -17,8 +17,7 @@ class Config:
     SQLALCHEMY_ENGINE_OPTIONS = {
         'pool_size': 10,
         'pool_recycle': 3600,
-        'pool_pre_ping': True,
-        'connect_args': {'charset': 'utf8mb4'}
+        'pool_pre_ping': True
     }
     
     # Configuração de sessão
