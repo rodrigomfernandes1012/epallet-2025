@@ -1,7 +1,7 @@
 """
 Rotas de Webhook para receber mensagens WhatsApp
 """
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from app import db
 from app.models import Motorista, ValePallet
 from app.utils.auditoria import log_acao
@@ -182,8 +182,12 @@ def receber_mensagem_whatsapp():
         )
         
         # Enviar notificação WhatsApp informando entrega concluída
-        from app.utils.whatsapp import enviar_whatsapp_entrega_concluida
-        enviar_whatsapp_entrega_concluida(motorista, vale)
+        try:
+            from app.utils.whatsapp import enviar_whatsapp_entrega_concluida
+            enviar_whatsapp_entrega_concluida(motorista, vale)
+        except Exception as whatsapp_error:
+            # Log do erro mas não interrompe o fluxo
+            current_app.logger.error(f'Erro ao enviar WhatsApp no webhook: {str(whatsapp_error)}')
         
         return jsonify({
             'status': 'success',

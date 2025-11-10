@@ -177,6 +177,7 @@ class ValePallet(db.Model):
     
     # Motorista responsável pela entrega
     motorista_id = db.Column(db.Integer, db.ForeignKey('motoristas.id'))
+    motorista = db.relationship('Motorista', backref='vales_pallet', lazy=True)
     
     # Dados do vale
     quantidade_pallets = db.Column(db.Integer, nullable=False)

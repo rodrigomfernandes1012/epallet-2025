@@ -2,7 +2,7 @@
 Rotas públicas (sem necessidade de login)
 Para confirmação de recebimento e validação de PIN
 """
-from flask import Blueprint, render_template, request, flash, redirect, url_for
+from flask import Blueprint, render_template, request, flash, redirect, url_for, current_app
 from app import db
 from app.models import ValePallet, Empresa, Motorista
 from datetime import datetime
@@ -128,9 +128,18 @@ def validacao_pin():
                     )
                     
                     # Enviar WhatsApp para o motorista informando entrega concluída
-                    if vale.motorista and vale.motorista.celular:
+                    try:
                         from app.utils.whatsapp import enviar_whatsapp_entrega_concluida
-                        enviar_whatsapp_entrega_concluida(vale.motorista, vale)
+                        from app.models import Motorista
+                        
+                        # Buscar motorista (mais robusto que usar relacionamento)
+                        if vale.motorista_id:
+                            motorista = Motorista.query.get(vale.motorista_id)
+                            if motorista and motorista.celular:
+                                enviar_whatsapp_entrega_concluida(motorista, vale)
+                    except Exception as e:
+                        # Log do erro mas não interrompe o fluxo
+                        current_app.logger.error(f'Erro ao enviar WhatsApp: {str(e)}')
                     
                     resultado = 'sucesso'
                     mensagem = 'Recebimento realizado com sucesso! Entrega concluída.'

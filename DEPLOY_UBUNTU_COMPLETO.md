@@ -222,12 +222,27 @@ python3 -c "import secrets; print(secrets.token_hex(32))"
 # Criar diretório instance
 mkdir -p instance
 
+# Dar permissões adequadas
+chmod 755 instance
+
 # Inicializar banco de dados
 python init_db.py
 
 # Verificar criação
 ls -la instance/
 ```
+
+**⚠️ IMPORTANTE:** Para produção com SQLite, use **caminho absoluto** no `.env`:
+
+```bash
+# Caminho relativo (desenvolvimento)
+DATABASE_URL=sqlite:///instance/epallet.db
+
+# Caminho absoluto (produção - RECOMENDADO)
+DATABASE_URL=sqlite:////home/epallet/flask-argon-system/instance/epallet.db
+```
+
+**Nota:** São **4 barras** (`////`) no caminho absoluto - 3 do protocolo SQLite + 1 do caminho Unix.
 
 ### Opção 2: PostgreSQL (Produção/Grande Porte)
 

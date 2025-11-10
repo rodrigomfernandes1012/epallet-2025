@@ -171,10 +171,27 @@ def enviar_whatsapp_entrega_concluida(motorista, vale):
     Returns:
         bool: True se enviado com sucesso, False caso contrário
     """
-    if not motorista or not motorista.celular:
+    try:
+        if not motorista:
+            current_app.logger.warning('Tentativa de enviar WhatsApp sem motorista')
+            return False
+            
+        if not motorista.celular:
+            current_app.logger.warning(f'Motorista {motorista.nome} não tem celular cadastrado')
+            return False
+        
+        mensagem = f"""Sr.(a) {motorista.nome}, a nota "{vale.numero_documento}", foi registrado entrega concluida em nosso sistema."""
+        
+        current_app.logger.info(f'Enviando WhatsApp de entrega concluída para {motorista.nome} ({motorista.celular})')
+        resultado = enviar_whatsapp(motorista.celular, mensagem)
+        
+        if resultado:
+            current_app.logger.info(f'WhatsApp enviado com sucesso para {motorista.nome}')
+            return True
+        else:
+            current_app.logger.error(f'Falha ao enviar WhatsApp para {motorista.nome}')
+            return False
+            
+    except Exception as e:
+        current_app.logger.error(f'Erro ao enviar WhatsApp entrega concluída: {str(e)}')
         return False
-    
-    mensagem = f"""Sr.(a) {motorista.nome}, a nota "{vale.numero_documento}", foi registrado entrega concluida em nosso sistema."""
-    
-    resultado = enviar_whatsapp(motorista.celular, mensagem)
-    return resultado is not None
