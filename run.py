@@ -3,6 +3,15 @@
 Script principal para executar a aplicação Flask
 """
 import os
+
+# Configurar PyMySQL para funcionar como MySQLdb
+# Necessário para usar PyMySQL no lugar de mysqlclient
+try:
+    import pymysql
+    pymysql.install_as_MySQLdb()
+except ImportError:
+    pass  # PyMySQL não instalado, usar mysqlclient se disponível
+
 from app import create_app
 
 # Criar a aplicação

@@ -4,6 +4,8 @@ Flask-Login==0.6.3
 Flask-WTF==1.2.1
 WTForms==3.1.1
 psycopg2-binary==2.9.9
+# mysqlclient==2.2.0  # Difícil de instalar no Windows
+PyMySQL==1.1.0  # Alternativa 100% Python (Windows e Linux)
 python-dotenv==1.0.0
 email-validator==2.1.0
 Werkzeug==3.0.1

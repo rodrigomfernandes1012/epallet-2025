@@ -12,8 +12,14 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or 'chave-secreta-desenvolvimento-mude-em-producao'
     
     # Configuração do banco de dados
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///app.db'
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'mysql://epallet_user:epallet_pass@localhost:3306/epallet_db'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_size': 10,
+        'pool_recycle': 3600,
+        'pool_pre_ping': True,
+        'connect_args': {'charset': 'utf8mb4'}
+    }
     
     # Configuração de sessão
     PERMANENT_SESSION_LIFETIME = timedelta(hours=24)
