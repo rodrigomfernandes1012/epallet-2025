@@ -1,0 +1,179 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Detalhes do Email{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header pb-0">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <h6 class="mb-0">Detalhes do Email</h6>
+                        <div>
+                            {% if current_user.tem_permissao('emails', 'criar') %}
+                            <form method="POST" action="{{ url_for('emails.reenviar', id=email.id) }}" style="display: inline;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
+                                <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Tem certeza que deseja reenviar este email?')">
+                                    <i class="fas fa-paper-plane"></i> Reenviar
+                                </button>
+                            </form>
+                            {% endif %}
+                            <a href="{{ url_for('emails.listar') }}" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-arrow-left"></i> Voltar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Informações do Email -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="info-box">
+                                <label class="form-label text-uppercase text-xs font-weight-bolder">Data de Envio</label>
+                                <p class="text-sm mb-0">
+                                    <i class="fas fa-calendar text-primary"></i>
+                                    {{ email.data_envio.strftime('%d/%m/%Y às %H:%M') }}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-box">
+                                <label class="form-label text-uppercase text-xs font-weight-bolder">Status</label>
+                                <p class="text-sm mb-0">
+                                    <span class="badge {{ email.get_status_badge_class() }}">
+                                        {{ email.get_status_display() }}
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr class="horizontal dark">
+                    
+                    <!-- Destinatário -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="info-box">
+                                <label class="form-label text-uppercase text-xs font-weight-bolder">Email Destinatário</label>
+                                <p class="text-sm mb-0">
+                                    <i class="fas fa-envelope text-info"></i>
+                                    {{ email.destinatario_email }}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-box">
+                                <label class="form-label text-uppercase text-xs font-weight-bolder">Nome Destinatário</label>
+                                <p class="text-sm mb-0">
+                                    <i class="fas fa-user text-info"></i>
+                                    {{ email.destinatario_nome or '-' }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr class="horizontal dark">
+                    
+                    <!-- Vale Pallet -->
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <div class="info-box">
+                                <label class="form-label text-uppercase text-xs font-weight-bolder">Vale Pallet</label>
+                                <p class="text-sm mb-0">
+                                    <i class="fas fa-file-alt text-success"></i>
+                                    <a href="{{ url_for('vale_pallet.visualizar', id=email.vale_pallet.id) }}">
+                                        {{ email.vale_pallet.numero_documento }}
+                                    </a>
+                                    - {{ email.vale_pallet.cliente.razao_social }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr class="horizontal dark">
+                    
+                    <!-- Assunto -->
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <div class="info-box">
+                                <label class="form-label text-uppercase text-xs font-weight-bolder">Assunto</label>
+                                <p class="text-sm mb-0">{{ email.assunto }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr class="horizontal dark">
+                    
+                    <!-- Reenvio -->
+                    {% if email.reenviado %}
+                    <div class="alert alert-info">
+                        <strong><i class="fas fa-info-circle"></i> Reenviado</strong><br>
+                        Este email foi reenviado em {{ email.data_reenvio.strftime('%d/%m/%Y às %H:%M') }}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Erro -->
+                    {% if email.status == 'erro' and email.erro_mensagem %}
+                    <div class="alert alert-danger">
+                        <strong><i class="fas fa-exclamation-triangle"></i> Erro no Envio</strong><br>
+                        {{ email.erro_mensagem }}
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Corpo do Email -->
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label text-uppercase text-xs font-weight-bolder">Conteúdo do Email</label>
+                            <div class="border rounded p-3" style="background: #f8f9fa; max-height: 600px; overflow-y: auto;">
+                                <iframe 
+                                    srcdoc="{{ email.corpo | replace('\"', '&quot;') }}" 
+                                    style="width: 100%; min-height: 500px; border: none;"
+                                    sandbox="allow-same-origin">
+                                </iframe>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr class="horizontal dark">
+                    
+                    <!-- Informações Adicionais -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-box">
+                                <label class="form-label text-uppercase text-xs font-weight-bolder">Enviado Por</label>
+                                <p class="text-sm mb-0">
+                                    <i class="fas fa-user-circle text-warning"></i>
+                                    {{ email.enviado_por.nome_completo }}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-box">
+                                <label class="form-label text-uppercase text-xs font-weight-bolder">ID do Email</label>
+                                <p class="text-sm mb-0">
+                                    <i class="fas fa-hashtag text-secondary"></i>
+                                    {{ email.id }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.info-box {
+    padding: 10px 0;
+}
+.info-box label {
+    margin-bottom: 5px;
+    color: #344767;
+}
+.info-box p {
+    color: #67748e;
+}
+</style>
+{% endblock %}

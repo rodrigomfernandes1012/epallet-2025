@@ -212,12 +212,17 @@ class ValePallet(db.Model):
     
     # Dados do vale
     quantidade_pallets = db.Column(db.Integer, nullable=False)
+    data_vencimento = db.Column(db.Date, nullable=False, index=True)
     numero_documento = db.Column(db.String(100), nullable=False)
     pin = db.Column(db.String(4), unique=True, nullable=False, index=True)
     
     # Status
     status = db.Column(db.String(30), default='pendente_entrega', nullable=False)  # pendente_entrega, entrega_realizada, entrega_concluida, cancelado
     data_confirmacao = db.Column(db.DateTime)  # Data da confirmação de recebimento
+    
+    # Controle de email
+    email_enviado = db.Column(db.Boolean, default=False, nullable=False, index=True)
+    data_envio_email = db.Column(db.DateTime)
     
     # Controle
     data_criacao = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
@@ -460,3 +465,67 @@ class PerfilPermissao(db.Model):
     
     def __repr__(self):
         return f'<PerfilPermissao {self.perfil_id} - {self.modulo}>'
+
+
+
+class EmpresaEmail(db.Model):
+    """Modelo para Emails de Empresa (múltiplos emails por empresa)"""
+    __tablename__ = 'empresa_emails'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    empresa_id = db.Column(db.Integer, db.ForeignKey('empresas.id'), nullable=False)
+    email = db.Column(db.String(120), nullable=False, index=True)
+    nome_contato = db.Column(db.String(150))
+    receber_notificacoes = db.Column(db.Boolean, default=True, nullable=False)
+    ativo = db.Column(db.Boolean, default=True, nullable=False)
+    data_criacao = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    data_atualizacao = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relacionamento
+    empresa = db.relationship('Empresa', backref=db.backref('emails', lazy='dynamic'))
+    
+    def __repr__(self):
+        return f'<EmpresaEmail {self.email} - {self.empresa.razao_social if self.empresa else "N/A"}>'
+
+
+class EmailEnviado(db.Model):
+    """Modelo para Log de Emails Enviados"""
+    __tablename__ = 'emails_enviados'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    vale_pallet_id = db.Column(db.Integer, db.ForeignKey('vales_pallet.id'), nullable=False)
+    destinatario_email = db.Column(db.String(120), nullable=False, index=True)
+    destinatario_nome = db.Column(db.String(150))
+    assunto = db.Column(db.String(200), nullable=False)
+    corpo = db.Column(db.Text, nullable=False)
+    status = db.Column(db.String(20), default='enviado', nullable=False, index=True)  # enviado, erro, reenviado
+    erro_mensagem = db.Column(db.Text)
+    data_envio = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+    reenviado = db.Column(db.Boolean, default=False, nullable=False, index=True)
+    data_reenvio = db.Column(db.DateTime)
+    enviado_por_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    
+    # Relacionamentos
+    vale_pallet = db.relationship('ValePallet', backref=db.backref('emails_enviados', lazy='dynamic'))
+    enviado_por = db.relationship('User', backref='emails_enviados')
+    
+    def get_status_display(self):
+        """Retorna o nome do status em português"""
+        status_map = {
+            'enviado': 'Enviado',
+            'erro': 'Erro no Envio',
+            'reenviado': 'Reenviado'
+        }
+        return status_map.get(self.status, self.status)
+    
+    def get_status_badge_class(self):
+        """Retorna a classe CSS para o badge de status"""
+        status_class = {
+            'enviado': 'badge-success',
+            'erro': 'badge-danger',
+            'reenviado': 'badge-info'
+        }
+        return status_class.get(self.status, 'badge-secondary')
+    
+    def __repr__(self):
+        return f'<EmailEnviado {self.destinatario_email} - Vale #{self.vale_pallet_id}>'

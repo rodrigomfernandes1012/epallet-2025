@@ -1,0 +1,201 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Emails Enviados{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6>Emails Enviados</h6>
+                    </div>
+                </div>
+                
+                <!-- Filtros -->
+                <div class="card-body">
+                    <form method="GET" action="{{ url_for('emails.listar') }}" class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Status</label>
+                            <select name="status" class="form-select">
+                                <option value="">Todos</option>
+                                <option value="enviado" {{ 'selected' if status_atual == 'enviado' else '' }}>Enviado</option>
+                                <option value="erro" {{ 'selected' if status_atual == 'erro' else '' }}>Erro</option>
+                                <option value="reenviado" {{ 'selected' if status_atual == 'reenviado' else '' }}>Reenviado</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label class="form-label">Empresa</label>
+                            <select name="empresa_id" class="form-select">
+                                <option value="">Todas</option>
+                                {% for empresa in empresas %}
+                                <option value="{{ empresa.id }}" {{ 'selected' if empresa_id_atual == empresa.id else '' }}>
+                                    {{ empresa.razao_social }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-2">
+                            <label class="form-label">Data Início</label>
+                            <input type="date" name="data_inicio" class="form-control" value="{{ data_inicio }}">
+                        </div>
+                        
+                        <div class="col-md-2">
+                            <label class="form-label">Data Fim</label>
+                            <input type="date" name="data_fim" class="form-control" value="{{ data_fim }}">
+                        </div>
+                        
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-filter"></i> Filtrar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="card-body px-0 pt-0 pb-2">
+                    {% if emails.items %}
+                    <div class="table-responsive p-0">
+                        <table class="table align-items-center mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Data/Hora</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Vale Pallet</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Destinatário</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Assunto</th>
+                                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
+                                    <th class="text-secondary opacity-7"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for email in emails.items %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex px-2 py-1">
+                                            <div>
+                                                <div class="icon icon-shape icon-sm border-radius-md bg-gradient-primary text-center me-2 d-flex align-items-center justify-content-center">
+                                                    <i class="fas fa-envelope text-white opacity-10"></i>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex flex-column justify-content-center">
+                                                <h6 class="mb-0 text-sm">{{ email.data_envio.strftime('%d/%m/%Y') }}</h6>
+                                                <p class="text-xs text-secondary mb-0">{{ email.data_envio.strftime('%H:%M') }}</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <p class="text-xs font-weight-bold mb-0">
+                                            <a href="{{ url_for('vale_pallet.visualizar', id=email.vale_pallet_id) }}">
+                                                {{ email.vale_pallet.numero_documento }}
+                                            </a>
+                                        </p>
+                                        <p class="text-xs text-secondary mb-0">
+                                            {{ email.vale_pallet.cliente.razao_social[:30] }}...
+                                        </p>
+                                    </td>
+                                    <td>
+                                        <p class="text-xs font-weight-bold mb-0">{{ email.destinatario_email }}</p>
+                                        <p class="text-xs text-secondary mb-0">{{ email.destinatario_nome or '-' }}</p>
+                                    </td>
+                                    <td>
+                                        <p class="text-xs font-weight-normal mb-0">{{ email.assunto }}</p>
+                                    </td>
+                                    <td class="align-middle text-center text-sm">
+                                        <span class="badge badge-sm {{ email.get_status_badge_class() }}">
+                                            {{ email.get_status_display() }}
+                                        </span>
+                                        {% if email.reenviado %}
+                                        <br><small class="text-xs text-secondary">
+                                            Reenviado em {{ email.data_reenvio.strftime('%d/%m/%Y %H:%M') }}
+                                        </small>
+                                        {% endif %}
+                                    </td>
+                                    <td class="align-middle">
+                                        <a href="{{ url_for('emails.visualizar', id=email.id) }}" 
+                                           class="text-secondary font-weight-bold text-xs" 
+                                           data-toggle="tooltip" 
+                                           data-original-title="Ver Detalhes">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        {% if current_user.tem_permissao('emails', 'criar') %}
+                                        <a href="javascript:;" 
+                                           onclick="confirmarReenvio({{ email.id }}, '{{ email.destinatario_email }}')" 
+                                           class="text-primary font-weight-bold text-xs ms-2" 
+                                           data-toggle="tooltip" 
+                                           data-original-title="Reenviar">
+                                            <i class="fas fa-paper-plane"></i>
+                                        </a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Paginação -->
+                    {% if emails.pages > 1 %}
+                    <div class="d-flex justify-content-center mt-4">
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination">
+                                {% if emails.has_prev %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('emails.listar', page=emails.prev_num, status=status_atual, empresa_id=empresa_id_atual, data_inicio=data_inicio, data_fim=data_fim) }}">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                </li>
+                                {% endif %}
+                                
+                                {% for page_num in emails.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                                    {% if page_num %}
+                                        <li class="page-item {{ 'active' if page_num == emails.page else '' }}">
+                                            <a class="page-link" href="{{ url_for('emails.listar', page=page_num, status=status_atual, empresa_id=empresa_id_atual, data_inicio=data_inicio, data_fim=data_fim) }}">
+                                                {{ page_num }}
+                                            </a>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item disabled"><span class="page-link">...</span></li>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% if emails.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ url_for('emails.listar', page=emails.next_num, status=status_atual, empresa_id=empresa_id_atual, data_inicio=data_inicio, data_fim=data_fim) }}">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
+                    {% endif %}
+                    
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-inbox fa-3x text-secondary mb-3"></i>
+                        <p class="text-sm text-secondary mb-0">Nenhum email encontrado com os filtros selecionados.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<form id="formReenviar" method="POST" style="display: none;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
+</form>
+
+<script>
+function confirmarReenvio(id, email) {
+    if (confirm('Tem certeza que deseja reenviar o email para "' + email + '"?')) {
+        var form = document.getElementById('formReenviar');
+        form.action = '{{ url_for("emails.reenviar", id=0) }}'.replace('0', id);
+        form.submit();
+    }
+}
+</script>
+{% endblock %}

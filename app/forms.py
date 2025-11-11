@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField
+from wtforms import StringField, PasswordField, BooleanField, SubmitField, SelectField, DateField
 from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError, Optional
 from app.models import User, Empresa
 import re
@@ -193,6 +193,9 @@ class ValePalletForm(FlaskForm):
         DataRequired(message='Campo obrigatório'),
         Length(max=100, message='Máximo de 100 caracteres')
     ])
+    data_vencimento = DateField('Data de Vencimento', validators=[
+        DataRequired(message='Data de vencimento é obrigatória')
+    ], format='%Y-%m-%d')
     submit = SubmitField('Salvar')
     
     def validate_quantidade_pallets(self, quantidade_pallets):

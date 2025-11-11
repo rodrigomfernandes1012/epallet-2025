@@ -102,6 +102,7 @@ def novo():
             motorista_id=form.motorista_id.data if form.motorista_id.data != 0 else None,
             quantidade_pallets=int(form.quantidade_pallets.data),
             numero_documento=form.numero_documento.data,
+            data_vencimento=form.data_vencimento.data,
             pin=pin,
             status='pendente_entrega',
             criado_por_id=current_user.id
@@ -110,19 +111,30 @@ def novo():
         db.session.add(vale)
         db.session.commit()
         
+        # Enviar email para o destinatário
+        from app.utils.email_service import enviar_email_vale_pallet
+        resultado_email = enviar_email_vale_pallet(vale.id, current_user.id)
+        
         # Enviar WhatsApp para o motorista (se selecionado)
+        mensagem_sucesso = 'Vale Pallet criado com sucesso!'
+        
+        if resultado_email['sucesso']:
+            mensagem_sucesso += f'. {resultado_email["emails_enviados"]} email(s) enviado(s)'
+        else:
+            mensagem_sucesso += f'. Aviso: {resultado_email["mensagem"]}'
+        
         if vale.motorista_id:
             motorista = Motorista.query.get(vale.motorista_id)
             if motorista and motorista.celular:
                 enviado = enviar_whatsapp_vale_criado(motorista, vale)
                 if enviado:
-                    flash(f'Vale Pallet criado com sucesso! PIN: {pin}. WhatsApp enviado para o motorista.', 'success')
+                    mensagem_sucesso += '. WhatsApp enviado para o motorista'
                 else:
-                    flash(f'Vale Pallet criado com sucesso! PIN: {pin}. Erro ao enviar WhatsApp para o motorista.', 'warning')
+                    mensagem_sucesso += '. Erro ao enviar WhatsApp para o motorista'
             else:
-                flash(f'Vale Pallet criado com sucesso! PIN: {pin}. Motorista sem celular cadastrado.', 'warning')
-        else:
-            flash(f'Vale Pallet criado com sucesso! PIN: {pin}', 'success')
+                mensagem_sucesso += '. Motorista sem celular cadastrado'
+        
+        flash(mensagem_sucesso, 'success' if resultado_email['sucesso'] else 'warning')
         
         return redirect(url_for('vale_pallet.visualizar', id=vale.id))
     
@@ -197,6 +209,7 @@ def editar(id):
         vale.destinatario_id = form.destinatario_id.data
         vale.quantidade_pallets = int(form.quantidade_pallets.data)
         vale.numero_documento = form.numero_documento.data
+        vale.data_vencimento = form.data_vencimento.data
         
         db.session.commit()
         
@@ -209,6 +222,7 @@ def editar(id):
         form.transportadora_id.data = vale.transportadora_id
         form.destinatario_id.data = vale.destinatario_id
         form.quantidade_pallets.data = str(vale.quantidade_pallets)
+        form.data_vencimento.data = vale.data_vencimento
     
     return render_template('vale_pallet/form.html', form=form, vale=vale, titulo='Editar Vale Pallet')
 

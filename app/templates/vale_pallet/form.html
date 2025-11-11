@@ -78,7 +78,7 @@
                         </div>
                         
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="form-group">
                                     {{ form.numero_documento.label(class="form-control-label") }}
                                     {{ form.numero_documento(class="form-control" + (" is-invalid" if form.numero_documento.errors else ""), placeholder="Ex: NF-12345") }}
@@ -90,7 +90,7 @@
                                 </div>
                             </div>
                             
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="form-group">
                                     {{ form.quantidade_pallets.label(class="form-control-label") }}
                                     {{ form.quantidade_pallets(class="form-control" + (" is-invalid" if form.quantidade_pallets.errors else ""), placeholder="Ex: 10") }}
@@ -99,6 +99,21 @@
                                             {% for error in form.quantidade_pallets.errors %}{{ error }}{% endfor %}
                                         </div>
                                     {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    {{ form.data_vencimento.label(class="form-control-label") }}
+                                    {{ form.data_vencimento(class="form-control" + (" is-invalid" if form.data_vencimento.errors else ""), type="date") }}
+                                    {% if form.data_vencimento.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.data_vencimento.errors %}{{ error }}{% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <small class="form-text text-muted">
+                                        <i class="fas fa-calendar-alt"></i> Data máxima para devolução dos pallets
+                                    </small>
                                 </div>
                             </div>
                         </div>

@@ -12,6 +12,9 @@
                 <div class="d-flex align-items-center">
                     <h6 class="mb-0">{{ empresa.razao_social }}</h6>
                     <div class="ms-auto">
+                        <a href="{{ url_for('empresa_emails.gerenciar', empresa_id=empresa.id) }}" class="btn btn-info btn-sm me-2">
+                            <i class="fas fa-envelope me-2"></i>Gerenciar Emails
+                        </a>
                         <a href="{{ url_for('empresas.editar', id=empresa.id) }}" class="btn btn-primary btn-sm me-2">
                             <i class="fas fa-edit me-2"></i>Editar
                         </a>

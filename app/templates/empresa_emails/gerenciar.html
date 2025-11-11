@@ -1,0 +1,128 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Emails - {{ empresa.razao_social }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6>Emails de Notificação</h6>
+                            <p class="text-sm mb-0">Empresa: <strong>{{ empresa.razao_social }}</strong></p>
+                        </div>
+                        <div>
+                            {% if current_user.tem_permissao('empresa_emails', 'criar') %}
+                            <a href="{{ url_for('empresa_emails.adicionar', empresa_id=empresa.id) }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus"></i> Adicionar Email
+                            </a>
+                            {% endif %}
+                            <a href="{{ url_for('empresas.visualizar', id=empresa.id) }}" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-arrow-left"></i> Voltar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body px-0 pt-0 pb-2">
+                    {% if emails %}
+                    <div class="table-responsive p-0">
+                        <table class="table align-items-center mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Email</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Contato</th>
+                                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Notificações</th>
+                                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
+                                    <th class="text-secondary opacity-7"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for email in emails %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex px-2 py-1">
+                                            <div>
+                                                <div class="icon icon-shape icon-sm border-radius-md bg-gradient-info text-center me-2 d-flex align-items-center justify-content-center">
+                                                    <i class="fas fa-envelope text-white opacity-10"></i>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex flex-column justify-content-center">
+                                                <h6 class="mb-0 text-sm">{{ email.email }}</h6>
+                                                <p class="text-xs text-secondary mb-0">
+                                                    Cadastrado em {{ email.data_criacao.strftime('%d/%m/%Y') }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <p class="text-xs font-weight-normal mb-0">{{ email.nome_contato or '-' }}</p>
+                                    </td>
+                                    <td class="align-middle text-center text-sm">
+                                        {% if email.receber_notificacoes %}
+                                        <span class="badge badge-sm bg-gradient-success">Sim</span>
+                                        {% else %}
+                                        <span class="badge badge-sm bg-gradient-secondary">Não</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="align-middle text-center text-sm">
+                                        {% if email.ativo %}
+                                        <span class="badge badge-sm bg-gradient-success">Ativo</span>
+                                        {% else %}
+                                        <span class="badge badge-sm bg-gradient-secondary">Inativo</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="align-middle">
+                                        {% if current_user.tem_permissao('empresa_emails', 'editar') %}
+                                        <a href="{{ url_for('empresa_emails.editar', id=email.id) }}" class="text-secondary font-weight-bold text-xs" data-toggle="tooltip" data-original-title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        {% endif %}
+                                        {% if current_user.tem_permissao('empresa_emails', 'excluir') %}
+                                        <a href="javascript:;" onclick="confirmarExclusao({{ email.id }}, '{{ email.email }}')" class="text-danger font-weight-bold text-xs ms-2" data-toggle="tooltip" data-original-title="Excluir">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-envelope fa-3x text-secondary mb-3"></i>
+                        <p class="text-sm text-secondary mb-0">Nenhum email cadastrado para esta empresa.</p>
+                        {% if current_user.tem_permissao('empresa_emails', 'criar') %}
+                        <a href="{{ url_for('empresa_emails.adicionar', empresa_id=empresa.id) }}" class="btn btn-primary btn-sm mt-3">
+                            <i class="fas fa-plus"></i> Adicionar Primeiro Email
+                        </a>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="alert alert-info">
+                <strong><i class="fas fa-info-circle"></i> Informação:</strong>
+                Os emails cadastrados aqui receberão notificações automáticas quando um vale pallet for emitido para esta empresa como destinatária.
+            </div>
+        </div>
+    </div>
+</div>
+
+<form id="formExcluir" method="POST" style="display: none;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
+</form>
+
+<script>
+function confirmarExclusao(id, email) {
+    if (confirm('Tem certeza que deseja excluir o email "' + email + '"?')) {
+        var form = document.getElementById('formExcluir');
+        form.action = '{{ url_for("empresa_emails.excluir", id=0) }}'.replace('0', id);
+        form.submit();
+    }
+}
+</script>
+{% endblock %}
