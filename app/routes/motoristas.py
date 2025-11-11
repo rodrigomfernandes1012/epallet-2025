@@ -45,6 +45,12 @@ def novo():
     ]
     
     if form.validate_on_submit():
+        # Verificar se o CPF já existe
+        motorista_existente = Motorista.query.filter_by(cpf=form.cpf.data).first()
+        if motorista_existente:
+            flash('Já existe um motorista com este CPF!', 'danger')
+            return render_template('motoristas/form.html', form=form, titulo='Novo Motorista')
+        
         # Verificar se a empresa é uma transportadora
         empresa = Empresa.query.get(form.empresa_id.data)
         if not empresa:

@@ -97,6 +97,9 @@ class User(UserMixin, db.Model):
     # Vínculo com empresa
     empresa_id = db.Column(db.Integer, db.ForeignKey('empresas.id'))
     
+    # Vínculo com perfil
+    perfil_id = db.Column(db.Integer, db.ForeignKey('perfis.id'))
+    
     # Controle
     data_criacao = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     data_atualizacao = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -130,6 +133,34 @@ class User(UserMixin, db.Model):
             if empresa_vinculada and empresa_vinculada not in empresas:
                 empresas.append(empresa_vinculada)
         return empresas
+    
+    def tem_permissao(self, modulo, acao):
+        """Verifica se o usuário tem permissão para uma ação em um módulo"""
+        if not self.perfil_id:
+            return False
+        
+        perfil = Perfil.query.get(self.perfil_id)
+        if not perfil or not perfil.ativo:
+            return False
+        
+        return perfil.tem_permissao(modulo, acao)
+    
+    def get_modulos_permitidos(self):
+        """Retorna lista de módulos que o usuário tem permissão de visualizar"""
+        if not self.perfil_id:
+            return []
+        
+        perfil = Perfil.query.get(self.perfil_id)
+        if not perfil or not perfil.ativo:
+            return []
+        
+        modulos = []
+        permissoes = PerfilPermissao.query.filter_by(perfil_id=self.perfil_id).all()
+        for perm in permissoes:
+            if perm.pode_visualizar:
+                modulos.append(perm.modulo)
+        
+        return modulos
     
     def __repr__(self):
         return f'<User {self.username}>'
@@ -355,3 +386,77 @@ class LogAuditoria(db.Model):
         except Exception as e:
             db.session.rollback()
             print(f"Erro ao registrar log: {e}")
+
+
+class Perfil(db.Model):
+    """Modelo para Perfis de Usuário com Permissões"""
+    __tablename__ = 'perfis'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(100), unique=True, nullable=False)
+    descricao = db.Column(db.Text)
+    ativo = db.Column(db.Boolean, default=True, nullable=False)
+    sistema = db.Column(db.Boolean, default=False, nullable=False)  # Perfis do sistema não podem ser excluídos
+    
+    # Controle
+    data_criacao = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    data_atualizacao = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relacionamentos
+    usuarios = db.relationship('User', backref='perfil_rel', lazy='dynamic')
+    permissoes = db.relationship('PerfilPermissao', backref='perfil_rel', lazy='dynamic', cascade='all, delete-orphan')
+    
+    def __repr__(self):
+        return f'<Perfil {self.nome}>'
+    
+    def get_permissao(self, modulo):
+        """Retorna a permissão para um módulo específico"""
+        return PerfilPermissao.query.filter_by(perfil_id=self.id, modulo=modulo).first()
+    
+    def tem_permissao(self, modulo, acao):
+        """Verifica se o perfil tem permissão para uma ação em um módulo"""
+        permissao = self.get_permissao(modulo)
+        if not permissao:
+            return False
+        
+        if acao == 'visualizar':
+            return permissao.pode_visualizar
+        elif acao == 'criar':
+            return permissao.pode_criar
+        elif acao == 'editar':
+            return permissao.pode_editar
+        elif acao == 'excluir':
+            return permissao.pode_excluir
+        
+        return False
+
+
+class PerfilPermissao(db.Model):
+    """Modelo para Permissões de Perfil por Módulo"""
+    __tablename__ = 'perfis_permissoes'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    perfil_id = db.Column(db.Integer, db.ForeignKey('perfis.id'), nullable=False)
+    
+    # Módulo do sistema
+    modulo = db.Column(db.String(50), nullable=False, index=True)
+    # Módulos: dashboard, empresas, tipos_empresa, motoristas, vale_pallet, 
+    #          relatorios, logs, usuarios, perfis
+    
+    # Permissões
+    pode_visualizar = db.Column(db.Boolean, default=False, nullable=False)
+    pode_criar = db.Column(db.Boolean, default=False, nullable=False)
+    pode_editar = db.Column(db.Boolean, default=False, nullable=False)
+    pode_excluir = db.Column(db.Boolean, default=False, nullable=False)
+    
+    # Controle
+    data_criacao = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    data_atualizacao = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Constraint única para perfil + módulo
+    __table_args__ = (
+        db.UniqueConstraint('perfil_id', 'modulo', name='uq_perfil_modulo'),
+    )
+    
+    def __repr__(self):
+        return f'<PerfilPermissao {self.perfil_id} - {self.modulo}>'

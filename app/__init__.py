@@ -28,7 +28,7 @@ def create_app(config_name=None):
     login_manager.login_message_category = 'info'
     
     # Registrar blueprints
-    from app.routes import auth, main, empresas, tipos_empresa, motoristas, vale_pallet, publico, logs, relatorios, webhook
+    from app.routes import auth, main, empresas, tipos_empresa, motoristas, vale_pallet, publico, logs, relatorios, webhook, usuarios, perfis
     
     app.register_blueprint(auth.bp)
     app.register_blueprint(main.bp)
@@ -40,6 +40,8 @@ def create_app(config_name=None):
     app.register_blueprint(logs.bp)
     app.register_blueprint(relatorios.bp)
     app.register_blueprint(webhook.webhook_bp)  # Webhook WhatsApp
+    app.register_blueprint(usuarios.usuarios_bp)  # Gestão de usuários
+    app.register_blueprint(perfis.perfis_bp)  # Gestão de perfis
     
     # Criar tabelas do banco de dados
     with app.app_context():

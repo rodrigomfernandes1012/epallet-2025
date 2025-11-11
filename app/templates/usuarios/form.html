@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header pb-0">
+                    <div class="d-flex align-items-center">
+                        <h6 class="mb-0">{{ titulo }}</h6>
+                        <a href="{{ url_for('usuarios.listar') }}" class="btn btn-secondary btn-sm ms-auto">
+                            <i class="fas fa-arrow-left"></i> Voltar
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ form.username.label(class="form-control-label") }}
+                                    {{ form.username(class="form-control" + (" is-invalid" if form.username.errors else "")) }}
+                                    {% if form.username.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.username.errors %}
+                                                <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ form.email.label(class="form-control-label") }}
+                                    {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else ""), type="email") }}
+                                    {% if form.email.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.email.errors %}
+                                                <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    {{ form.nome_completo.label(class="form-control-label") }}
+                                    {{ form.nome_completo(class="form-control" + (" is-invalid" if form.nome_completo.errors else "")) }}
+                                    {% if form.nome_completo.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.nome_completo.errors %}
+                                                <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ form.empresa_id.label(class="form-control-label") }}
+                                    {{ form.empresa_id(class="form-select" + (" is-invalid" if form.empresa_id.errors else "")) }}
+                                    {% if form.empresa_id.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.empresa_id.errors %}
+                                                <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ form.perfil_id.label(class="form-control-label") }}
+                                    {{ form.perfil_id(class="form-select" + (" is-invalid" if form.perfil_id.errors else "")) }}
+                                    {% if form.perfil_id.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.perfil_id.errors %}
+                                                <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ form.password.label(class="form-control-label") }}
+                                    {{ form.password(class="form-control" + (" is-invalid" if form.password.errors else ""), placeholder="Deixe em branco para manter a senha atual" if usuario else "Digite a senha") }}
+                                    {% if form.password.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.password.errors %}
+                                                <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    {% if not usuario %}
+                                    <small class="form-text text-muted">Mínimo 6 caracteres</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    {{ form.password_confirm.label(class="form-control-label") }}
+                                    {{ form.password_confirm(class="form-control" + (" is-invalid" if form.password_confirm.errors else ""), placeholder="Confirme a senha") }}
+                                    {% if form.password_confirm.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.password_confirm.errors %}
+                                                <span>{{ error }}</span>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-check">
+                                    {{ form.ativo(class="form-check-input") }}
+                                    {{ form.ativo.label(class="form-check-label") }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr class="horizontal dark">
+                        
+                        <div class="d-flex justify-content-end">
+                            <a href="{{ url_for('usuarios.listar') }}" class="btn btn-secondary me-2">Cancelar</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Salvar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

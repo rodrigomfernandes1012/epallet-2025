@@ -160,8 +160,7 @@ class MotoristaForm(FlaskForm):
     submit = SubmitField('Salvar')
     
     def validate_cpf(self, cpf):
-        """Valida se o CPF já existe (apenas números)"""
-        from app.models import Motorista
+        """Valida formato do CPF (apenas números)"""
         # Remove caracteres não numéricos
         cpf_numeros = re.sub(r'\D', '', cpf.data)
         
@@ -169,10 +168,8 @@ class MotoristaForm(FlaskForm):
         if len(cpf_numeros) != 11:
             raise ValidationError('CPF deve conter 11 dígitos')
         
-        # Verifica se já existe no banco
-        motorista = Motorista.query.filter_by(cpf=cpf.data).first()
-        if motorista:
-            raise ValidationError('Este CPF já está cadastrado.')
+        # Nota: Validação de CPF duplicado é feita na rota,
+        # pois precisa excluir o próprio motorista em caso de edição
 
 
 class ValePalletForm(FlaskForm):

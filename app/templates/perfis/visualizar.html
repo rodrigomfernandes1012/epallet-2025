@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Visualizar Perfil{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header pb-0">
+                    <div class="d-flex align-items-center">
+                        <h6 class="mb-0">Detalhes do Perfil</h6>
+                        <div class="ms-auto">
+                            {% if current_user.tem_permissao('perfis', 'editar') %}
+                            <a href="{{ url_for('perfis.editar_permissoes', id=perfil.id) }}" class="btn btn-info btn-sm me-2">
+                                <i class="fas fa-lock"></i> Permissões
+                            </a>
+                            {% if not perfil.sistema %}
+                            <a href="{{ url_for('perfis.editar', id=perfil.id) }}" class="btn btn-primary btn-sm me-2">
+                                <i class="fas fa-edit"></i> Editar
+                            </a>
+                            {% endif %}
+                            {% endif %}
+                            <a href="{{ url_for('perfis.listar') }}" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-arrow-left"></i> Voltar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-sm text-secondary mb-1">Nome</label>
+                                <p class="text-dark font-weight-bold">{{ perfil.nome }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-sm text-secondary mb-1">Status</label>
+                                <p>
+                                    {% if perfil.ativo %}
+                                    <span class="badge bg-gradient-success">Ativo</span>
+                                    {% else %}
+                                    <span class="badge bg-gradient-secondary">Inativo</span>
+                                    {% endif %}
+                                    {% if perfil.sistema %}
+                                    <span class="badge bg-gradient-warning ms-2">Sistema</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <label class="form-label text-sm text-secondary mb-1">Descrição</label>
+                                <p class="text-dark">{{ perfil.descricao or '-' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label text-sm text-secondary mb-1">Usuários com este Perfil</label>
+                                <p class="text-dark font-weight-bold">{{ perfil.usuarios.count() }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr class="horizontal dark">
+                    
+                    <h6 class="mb-3">Permissões</h6>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr>
+                                    <th class="text-uppercase text-secondary text-xs font-weight-bolder">Módulo</th>
+                                    <th class="text-center text-uppercase text-secondary text-xs font-weight-bolder">Visualizar</th>
+                                    <th class="text-center text-uppercase text-secondary text-xs font-weight-bolder">Criar</th>
+                                    <th class="text-center text-uppercase text-secondary text-xs font-weight-bolder">Editar</th>
+                                    <th class="text-center text-uppercase text-secondary text-xs font-weight-bolder">Excluir</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for modulo_id, perm in permissoes.items() %}
+                                <tr>
+                                    <td><strong>{{ perm.nome }}</strong></td>
+                                    <td class="text-center">
+                                        {% if perm.visualizar %}
+                                        <i class="fas fa-check text-success"></i>
+                                        {% else %}
+                                        <i class="fas fa-times text-danger"></i>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        {% if perm.criar %}
+                                        <i class="fas fa-check text-success"></i>
+                                        {% else %}
+                                        <i class="fas fa-times text-danger"></i>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        {% if perm.editar %}
+                                        <i class="fas fa-check text-success"></i>
+                                        {% else %}
+                                        <i class="fas fa-times text-danger"></i>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        {% if perm.excluir %}
+                                        <i class="fas fa-check text-success"></i>
+                                        {% else %}
+                                        <i class="fas fa-times text-danger"></i>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
