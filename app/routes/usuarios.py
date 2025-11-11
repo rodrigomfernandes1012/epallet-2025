@@ -7,7 +7,7 @@ from app import db
 from app.models import User, Empresa, Perfil
 from app.forms_admin import UsuarioForm, AlterarSenhaForm
 from app.utils.decorators import permissao_required, admin_required
-from app.utils.auditoria import registrar_log
+from app.utils.auditoria import log_acao
 
 usuarios_bp = Blueprint('usuarios', __name__, url_prefix='/usuarios')
 
@@ -32,12 +32,10 @@ def listar():
         page=page, per_page=per_page, error_out=False
     )
     
-    registrar_log(
+    log_acao(
         modulo='usuarios',
         acao='read',
-        descricao=f'Listou usuários - Página {page}',
-        usuario_id=current_user.id,
-        usuario_nome=current_user.nome_completo
+        descricao=f'Listou usuários - Página {page}'
     )
     
     return render_template('usuarios/listar.html', usuarios=usuarios)
@@ -68,12 +66,10 @@ def novo():
             db.session.add(usuario)
             db.session.commit()
             
-            registrar_log(
+            log_acao(
                 modulo='usuarios',
                 acao='create',
                 descricao=f'Criou usuário: {usuario.username} - {usuario.nome_completo}',
-                usuario_id=current_user.id,
-                usuario_nome=current_user.nome_completo,
                 operacao_sql='INSERT',
                 tabela_afetada='users',
                 registro_id=usuario.id,
@@ -92,12 +88,10 @@ def novo():
         except Exception as e:
             db.session.rollback()
             flash(f'Erro ao criar usuário: {str(e)}', 'danger')
-            registrar_log(
+            log_acao(
                 modulo='usuarios',
                 acao='create',
                 descricao=f'Erro ao criar usuário: {str(e)}',
-                usuario_id=current_user.id,
-                usuario_nome=current_user.nome_completo,
                 sucesso=False,
                 mensagem_erro=str(e)
             )
@@ -144,12 +138,10 @@ def editar(id):
             
             db.session.commit()
             
-            registrar_log(
+            log_acao(
                 modulo='usuarios',
                 acao='update',
                 descricao=f'Editou usuário: {usuario.username} - {usuario.nome_completo}',
-                usuario_id=current_user.id,
-                usuario_nome=current_user.nome_completo,
                 operacao_sql='UPDATE',
                 tabela_afetada='users',
                 registro_id=usuario.id,
@@ -170,12 +162,10 @@ def editar(id):
         except Exception as e:
             db.session.rollback()
             flash(f'Erro ao atualizar usuário: {str(e)}', 'danger')
-            registrar_log(
+            log_acao(
                 modulo='usuarios',
                 acao='update',
                 descricao=f'Erro ao editar usuário: {str(e)}',
-                usuario_id=current_user.id,
-                usuario_nome=current_user.nome_completo,
                 sucesso=False,
                 mensagem_erro=str(e)
             )
@@ -195,12 +185,10 @@ def visualizar(id):
         flash('Você não tem permissão para visualizar este usuário.', 'danger')
         return redirect(url_for('usuarios.listar'))
     
-    registrar_log(
+    log_acao(
         modulo='usuarios',
         acao='read',
         descricao=f'Visualizou usuário: {usuario.username}',
-        usuario_id=current_user.id,
-        usuario_nome=current_user.nome_completo,
         registro_id=usuario.id
     )
     
@@ -236,12 +224,10 @@ def excluir(id):
         db.session.delete(usuario)
         db.session.commit()
         
-        registrar_log(
+        log_acao(
             modulo='usuarios',
             acao='delete',
             descricao=f'Excluiu usuário: {dados_usuario["username"]} - {dados_usuario["nome_completo"]}',
-            usuario_id=current_user.id,
-            usuario_nome=current_user.nome_completo,
             operacao_sql='DELETE',
             tabela_afetada='users',
             registro_id=id,
@@ -253,12 +239,10 @@ def excluir(id):
     except Exception as e:
         db.session.rollback()
         flash(f'Erro ao excluir usuário: {str(e)}', 'danger')
-        registrar_log(
+        log_acao(
             modulo='usuarios',
             acao='delete',
             descricao=f'Erro ao excluir usuário: {str(e)}',
-            usuario_id=current_user.id,
-            usuario_nome=current_user.nome_completo,
             sucesso=False,
             mensagem_erro=str(e)
         )
@@ -283,12 +267,10 @@ def alterar_senha():
             current_user.set_password(form.nova_senha.data)
             db.session.commit()
             
-            registrar_log(
+            log_acao(
                 modulo='usuarios',
                 acao='update',
                 descricao='Alterou sua própria senha',
-                usuario_id=current_user.id,
-                usuario_nome=current_user.nome_completo,
                 operacao_sql='UPDATE',
                 tabela_afetada='users',
                 registro_id=current_user.id
@@ -300,12 +282,10 @@ def alterar_senha():
         except Exception as e:
             db.session.rollback()
             flash(f'Erro ao alterar senha: {str(e)}', 'danger')
-            registrar_log(
+            log_acao(
                 modulo='usuarios',
                 acao='update',
                 descricao=f'Erro ao alterar senha: {str(e)}',
-                usuario_id=current_user.id,
-                usuario_nome=current_user.nome_completo,
                 sucesso=False,
                 mensagem_erro=str(e)
             )

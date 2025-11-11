@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "layouts/base.html" %}
 
 {% block title %}Permissões - {{ perfil.nome }}{% endblock %}
 
@@ -18,7 +18,7 @@
                 </div>
                 <div class="card-body">
                     <form method="POST" action="">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
                         
                         <div class="table-responsive">
                             <table class="table table-bordered">

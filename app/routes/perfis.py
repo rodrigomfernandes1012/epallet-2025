@@ -7,7 +7,7 @@ from app import db
 from app.models import Perfil, PerfilPermissao
 from app.forms_admin import PerfilForm
 from app.utils.decorators import permissao_required, admin_required
-from app.utils.auditoria import registrar_log
+from app.utils.auditoria import log_acao
 
 perfis_bp = Blueprint('perfis', __name__, url_prefix='/perfis')
 
@@ -32,12 +32,10 @@ def listar():
     """Lista todos os perfis"""
     perfis = Perfil.query.order_by(Perfil.nome).all()
     
-    registrar_log(
+    log_acao(
         modulo='perfis',
         acao='read',
-        descricao='Listou perfis',
-        usuario_id=current_user.id,
-        usuario_nome=current_user.nome_completo
+        descricao='Listou perfis'
     )
     
     return render_template('perfis/listar.html', perfis=perfis)
@@ -77,12 +75,10 @@ def novo():
             
             db.session.commit()
             
-            registrar_log(
+            log_acao(
                 modulo='perfis',
                 acao='create',
                 descricao=f'Criou perfil: {perfil.nome}',
-                usuario_id=current_user.id,
-                usuario_nome=current_user.nome_completo,
                 operacao_sql='INSERT',
                 tabela_afetada='perfis',
                 registro_id=perfil.id,
@@ -99,12 +95,10 @@ def novo():
         except Exception as e:
             db.session.rollback()
             flash(f'Erro ao criar perfil: {str(e)}', 'danger')
-            registrar_log(
+            log_acao(
                 modulo='perfis',
                 acao='create',
                 descricao=f'Erro ao criar perfil: {str(e)}',
-                usuario_id=current_user.id,
-                usuario_nome=current_user.nome_completo,
                 sucesso=False,
                 mensagem_erro=str(e)
             )
@@ -141,12 +135,10 @@ def editar(id):
             
             db.session.commit()
             
-            registrar_log(
+            log_acao(
                 modulo='perfis',
                 acao='update',
                 descricao=f'Editou perfil: {perfil.nome}',
-                usuario_id=current_user.id,
-                usuario_nome=current_user.nome_completo,
                 operacao_sql='UPDATE',
                 tabela_afetada='perfis',
                 registro_id=perfil.id,
@@ -164,12 +156,10 @@ def editar(id):
         except Exception as e:
             db.session.rollback()
             flash(f'Erro ao atualizar perfil: {str(e)}', 'danger')
-            registrar_log(
+            log_acao(
                 modulo='perfis',
                 acao='update',
                 descricao=f'Erro ao editar perfil: {str(e)}',
-                usuario_id=current_user.id,
-                usuario_nome=current_user.nome_completo,
                 sucesso=False,
                 mensagem_erro=str(e)
             )
@@ -211,12 +201,10 @@ def editar_permissoes(id):
             
             db.session.commit()
             
-            registrar_log(
+            log_acao(
                 modulo='perfis',
                 acao='update',
                 descricao=f'Atualizou permissões do perfil: {perfil.nome}',
-                usuario_id=current_user.id,
-                usuario_nome=current_user.nome_completo,
                 operacao_sql='UPDATE',
                 tabela_afetada='perfis_permissoes',
                 registro_id=perfil.id
@@ -228,12 +216,10 @@ def editar_permissoes(id):
         except Exception as e:
             db.session.rollback()
             flash(f'Erro ao atualizar permissões: {str(e)}', 'danger')
-            registrar_log(
+            log_acao(
                 modulo='perfis',
                 acao='update',
                 descricao=f'Erro ao atualizar permissões: {str(e)}',
-                usuario_id=current_user.id,
-                usuario_nome=current_user.nome_completo,
                 sucesso=False,
                 mensagem_erro=str(e)
             )
@@ -282,12 +268,10 @@ def visualizar(id):
             'excluir': perm.pode_excluir if perm else False,
         }
     
-    registrar_log(
+    log_acao(
         modulo='perfis',
         acao='read',
         descricao=f'Visualizou perfil: {perfil.nome}',
-        usuario_id=current_user.id,
-        usuario_nome=current_user.nome_completo,
         registro_id=perfil.id
     )
     
@@ -321,12 +305,10 @@ def excluir(id):
         db.session.delete(perfil)
         db.session.commit()
         
-        registrar_log(
+        log_acao(
             modulo='perfis',
             acao='delete',
             descricao=f'Excluiu perfil: {dados_perfil["nome"]}',
-            usuario_id=current_user.id,
-            usuario_nome=current_user.nome_completo,
             operacao_sql='DELETE',
             tabela_afetada='perfis',
             registro_id=id,
@@ -338,12 +320,10 @@ def excluir(id):
     except Exception as e:
         db.session.rollback()
         flash(f'Erro ao excluir perfil: {str(e)}', 'danger')
-        registrar_log(
+        log_acao(
             modulo='perfis',
             acao='delete',
             descricao=f'Erro ao excluir perfil: {str(e)}',
-            usuario_id=current_user.id,
-            usuario_nome=current_user.nome_completo,
             sucesso=False,
             mensagem_erro=str(e)
         )
