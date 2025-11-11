@@ -212,6 +212,7 @@ class ValePallet(db.Model):
     
     # Dados do vale
     quantidade_pallets = db.Column(db.Integer, nullable=False)
+    quantidade_devolvida = db.Column(db.Integer, default=0, nullable=False)
     data_vencimento = db.Column(db.Date, nullable=False, index=True)
     numero_documento = db.Column(db.String(100), nullable=False)
     pin = db.Column(db.String(4), unique=True, nullable=False, index=True)
@@ -227,6 +228,8 @@ class ValePallet(db.Model):
     # Controle
     data_criacao = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     data_atualizacao = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    data_primeira_devolucao = db.Column(db.DateTime)
+    data_ultima_devolucao = db.Column(db.DateTime)
     
     # Relacionamento com usuário que criou
     criado_por_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
@@ -529,3 +532,100 @@ class EmailEnviado(db.Model):
     
     def __repr__(self):
         return f'<EmailEnviado {self.destinatario_email} - Vale #{self.vale_pallet_id}>'
+
+
+class DevolucaoPallet(db.Model):
+    """Modelo para Devolução de Pallets"""
+    __tablename__ = 'devolucoes_pallet'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    
+    # Empresas envolvidas
+    cliente_id = db.Column(db.Integer, db.ForeignKey('empresas.id'), nullable=False, index=True)
+    destinatario_id = db.Column(db.Integer, db.ForeignKey('empresas.id'), nullable=False, index=True)
+    transportadora_id = db.Column(db.Integer, db.ForeignKey('empresas.id'), nullable=False, index=True)
+    
+    # Motorista responsável pela coleta
+    motorista_id = db.Column(db.Integer, db.ForeignKey('motoristas.id'), index=True)
+    
+    # Dados da devolução
+    quantidade_pallets = db.Column(db.Integer, nullable=False)
+    data_agendamento = db.Column(db.Date, nullable=False, index=True)
+    pin_devolucao = db.Column(db.String(6), unique=True, nullable=False, index=True)
+    
+    # Status
+    status = db.Column(db.String(30), default='agendado', nullable=False, index=True)
+    # Status: agendado, coletado, finalizado, cancelado
+    
+    # Observações e motivo de cancelamento
+    observacoes = db.Column(db.Text)
+    motivo_cancelamento = db.Column(db.Text)
+    
+    # Datas de controle
+    data_coleta = db.Column(db.DateTime)  # Quando motorista validou PIN
+    data_confirmacao = db.Column(db.DateTime)  # Quando transportadora confirmou entrega
+    
+    # Controle
+    criado_por_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    criado_em = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+    atualizado_em = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relacionamentos
+    cliente = db.relationship('Empresa', foreign_keys=[cliente_id], backref='devolucoes_como_cliente')
+    destinatario = db.relationship('Empresa', foreign_keys=[destinatario_id], backref='devolucoes_como_destinatario')
+    transportadora = db.relationship('Empresa', foreign_keys=[transportadora_id], backref='devolucoes_como_transportadora')
+    motorista = db.relationship('Motorista', backref='devolucoes_pallet')
+    criado_por = db.relationship('User', backref='devolucoes_criadas')
+    baixas = db.relationship('DevolucaoBaixa', backref='devolucao', lazy='dynamic', cascade='all, delete-orphan')
+    
+    def get_status_display(self):
+        """Retorna o nome do status em português"""
+        status_map = {
+            'agendado': 'Agendado',
+            'coletado': 'Coletado',
+            'finalizado': 'Finalizado',
+            'cancelado': 'Cancelado'
+        }
+        return status_map.get(self.status, self.status)
+    
+    def get_status_badge_class(self):
+        """Retorna a classe CSS para o badge de status"""
+        status_class = {
+            'agendado': 'badge-warning',
+            'coletado': 'badge-info',
+            'finalizado': 'badge-success',
+            'cancelado': 'badge-danger'
+        }
+        return status_class.get(self.status, 'badge-secondary')
+    
+    def pode_validar_pin(self):
+        """Verifica se a devolução pode ter o PIN validado"""
+        return self.status == 'agendado'
+    
+    def pode_confirmar(self):
+        """Verifica se a devolução pode ser confirmada"""
+        return self.status == 'coletado'
+    
+    def pode_cancelar(self):
+        """Verifica se a devolução pode ser cancelada"""
+        return self.status in ['agendado', 'coletado']
+    
+    def __repr__(self):
+        return f'<DevolucaoPallet #{self.id} - {self.quantidade_pallets} pallets - {self.status}>'
+
+
+class DevolucaoBaixa(db.Model):
+    """Modelo para Baixas de Vales Pallet por Devolução"""
+    __tablename__ = 'devolucoes_baixas'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    devolucao_id = db.Column(db.Integer, db.ForeignKey('devolucoes_pallet.id'), nullable=False, index=True)
+    vale_pallet_id = db.Column(db.Integer, db.ForeignKey('vales_pallet.id'), nullable=False, index=True)
+    quantidade_baixada = db.Column(db.Integer, nullable=False)
+    data_baixa = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+    
+    # Relacionamentos
+    vale_pallet = db.relationship('ValePallet', backref='devolucoes_baixas')
+    
+    def __repr__(self):
+        return f'<DevolucaoBaixa Devolução #{self.devolucao_id} - Vale #{self.vale_pallet_id} - {self.quantidade_baixada} pallets>'

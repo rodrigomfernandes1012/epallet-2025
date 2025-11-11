@@ -2,7 +2,7 @@
 
 {% block title %}Relatório de Movimentação{% endblock %}
 {% block breadcrumb %}Relatórios / Movimentação{% endblock %}
-{% block page_title %}Relatório de Movimentação de Vales Pallet{% endblock %}
+{% block page_title %}Relatório de Movimentação{% endblock %}
 
 {% block content %}
 <div class="row">
@@ -11,7 +11,16 @@
             <div class="card-header pb-0">
                 <div class="row">
                     <div class="col-6">
-                        <h6>Relatório de Vales Pallet</h6>
+                        <h6>Relatório de Movimentação</h6>
+                        <p class="text-sm mb-0 text-secondary">
+                            {% if filtro_tipo_relatorio == 'vales' %}
+                                Vales Pallet
+                            {% elif filtro_tipo_relatorio == 'devolucoes' %}
+                                Devoluções de Pallets
+                            {% else %}
+                                Vales e Devoluções (Consolidado)
+                            {% endif %}
+                        </p>
                     </div>
                     <div class="col-6 text-end">
                         <button class="btn btn-sm btn-success" onclick="window.print()">
@@ -24,6 +33,33 @@
             <!-- Filtros -->
             <div class="card-body">
                 <form method="GET" action="{{ url_for('relatorios.movimentacao') }}" class="row g-3">
+                    <!-- Tipo de Relatório -->
+                    <div class="col-md-12">
+                        <label class="form-label fw-bold">Tipo de Relatório</label>
+                        <div class="btn-group w-100" role="group">
+                            <input type="radio" class="btn-check" name="tipo_relatorio" id="tipo_vales" value="vales" 
+                                   {% if filtro_tipo_relatorio == 'vales' %}checked{% endif %} autocomplete="off">
+                            <label class="btn btn-outline-primary" for="tipo_vales">
+                                <i class="fas fa-file-alt me-2"></i>Vales Pallet
+                            </label>
+                            
+                            <input type="radio" class="btn-check" name="tipo_relatorio" id="tipo_devolucoes" value="devolucoes" 
+                                   {% if filtro_tipo_relatorio == 'devolucoes' %}checked{% endif %} autocomplete="off">
+                            <label class="btn btn-outline-success" for="tipo_devolucoes">
+                                <i class="fas fa-undo me-2"></i>Devoluções
+                            </label>
+                            
+                            <input type="radio" class="btn-check" name="tipo_relatorio" id="tipo_consolidado" value="consolidado" 
+                                   {% if filtro_tipo_relatorio == 'consolidado' %}checked{% endif %} autocomplete="off">
+                            <label class="btn btn-outline-info" for="tipo_consolidado">
+                                <i class="fas fa-chart-bar me-2"></i>Consolidado
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="col-12"><hr class="horizontal dark my-2"></div>
+                    
+                    <!-- Filtros Adicionais -->
                     <div class="col-md-3">
                         <label class="form-label">Tipo de Empresa</label>
                         <select name="tipo_empresa" class="form-select">
@@ -39,14 +75,25 @@
                         <input type="text" name="empresa" class="form-control" placeholder="Nome da empresa" value="{{ filtro_empresa }}">
                     </div>
                     
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label class="form-label">Motorista</label>
-                        <input type="text" name="motorista" class="form-control" placeholder="Nome do motorista" value="{{ filtro_motorista }}">
+                        <input type="text" name="motorista" class="form-control" placeholder="Nome" value="{{ filtro_motorista }}">
                     </div>
                     
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <label class="form-label">Nº Documento</label>
-                        <input type="text" name="documento" class="form-control" placeholder="Número do documento" value="{{ filtro_documento }}">
+                        <input type="text" name="documento" class="form-control" placeholder="Número" value="{{ filtro_documento }}">
+                    </div>
+                    
+                    <div class="col-md-2">
+                        <label class="form-label">Status</label>
+                        <select name="status" class="form-select">
+                            <option value="">Todos</option>
+                            <option value="pendente" {% if filtro_status == 'pendente' %}selected{% endif %}>Pendente</option>
+                            <option value="em_transito" {% if filtro_status == 'em_transito' %}selected{% endif %}>Em Trânsito</option>
+                            <option value="finalizado" {% if filtro_status == 'finalizado' %}selected{% endif %}>Finalizado</option>
+                            <option value="cancelado" {% if filtro_status == 'cancelado' %}selected{% endif %}>Cancelado</option>
+                        </select>
                     </div>
                     
                     <div class="col-12">
@@ -63,97 +110,214 @@
             </div>
             
             <div class="card-body px-0 pt-0 pb-2">
-                {% if vales %}
-                    <!-- Resumo -->
-                    <div class="px-4 pb-3">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="card bg-gradient-info">
-                                    <div class="card-body p-3 text-center">
-                                        <h3 class="text-white mb-0">{{ total_vales }}</h3>
-                                        <p class="text-white text-sm mb-0 opacity-8">Total de Vales</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="card bg-gradient-success">
-                                    <div class="card-body p-3 text-center">
-                                        <h3 class="text-white mb-0">{{ total_pallets }}</h3>
-                                        <p class="text-white text-sm mb-0 opacity-8">Total de Pallets</p>
-                                    </div>
+                <!-- Resumo -->
+                <div class="px-4 pb-3">
+                    <div class="row">
+                        {% if filtro_tipo_relatorio in ['vales', 'consolidado'] %}
+                        <div class="col-md-3">
+                            <div class="card bg-gradient-primary">
+                                <div class="card-body p-3 text-center">
+                                    <h3 class="text-white mb-0">{{ total_vales }}</h3>
+                                    <p class="text-white text-sm mb-0 opacity-8">Vales Pallet</p>
                                 </div>
                             </div>
                         </div>
+                        <div class="col-md-3">
+                            <div class="card bg-gradient-info">
+                                <div class="card-body p-3 text-center">
+                                    <h3 class="text-white mb-0">{{ total_pallets_vales }}</h3>
+                                    <p class="text-white text-sm mb-0 opacity-8">Pallets (Vales)</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if filtro_tipo_relatorio in ['devolucoes', 'consolidado'] %}
+                        <div class="col-md-3">
+                            <div class="card bg-gradient-success">
+                                <div class="card-body p-3 text-center">
+                                    <h3 class="text-white mb-0">{{ total_devolucoes }}</h3>
+                                    <p class="text-white text-sm mb-0 opacity-8">Devoluções</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-gradient-warning">
+                                <div class="card-body p-3 text-center">
+                                    <h3 class="text-white mb-0">{{ total_pallets_devolucoes }}</h3>
+                                    <p class="text-white text-sm mb-0 opacity-8">Pallets (Devoluções)</p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>
-                    
+                </div>
+                
+                {% if vales or devolucoes %}
                     <!-- Tabela de Vales -->
-                    <div class="table-responsive p-0">
-                        <table class="table align-items-center mb-0">
-                            <thead>
-                                <tr>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Documento</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">PIN</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Cliente</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Transportadora</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Destinatário</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Motorista</th>
-                                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Pallets</th>
-                                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
-                                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Data</th>
-                                    <th class="text-secondary opacity-7"></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for vale in vales %}
-                                <tr>
-                                    <td>
-                                        <div class="d-flex px-2 py-1">
-                                            <div class="d-flex flex-column justify-content-center">
-                                                <h6 class="mb-0 text-sm">{{ vale.numero_documento }}</h6>
+                    {% if filtro_tipo_relatorio in ['vales', 'consolidado'] and vales %}
+                    <div class="px-4 pb-3">
+                        <h6 class="text-uppercase text-body text-xs font-weight-bolder mb-3">
+                            <i class="fas fa-file-alt me-2"></i>Vales Pallet ({{ total_vales }})
+                        </h6>
+                        <div class="table-responsive p-0">
+                            <table class="table align-items-center mb-0">
+                                <thead>
+                                    <tr>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Documento</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">PIN</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Cliente</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Transportadora</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Destinatário</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Motorista</th>
+                                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Pallets</th>
+                                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Saldo</th>
+                                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
+                                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Data</th>
+                                        <th class="text-secondary opacity-7"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for vale in vales %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex px-2 py-1">
+                                                <div class="d-flex flex-column justify-content-center">
+                                                    <h6 class="mb-0 text-sm">{{ vale.numero_documento }}</h6>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="badge badge-sm bg-gradient-info">{{ vale.pin }}</span>
-                                    </td>
-                                    <td>
-                                        <p class="text-xs font-weight-bold mb-0">{{ vale.cliente_nome }}</p>
-                                    </td>
-                                    <td>
-                                        <p class="text-xs font-weight-bold mb-0">{{ vale.transportadora_nome }}</p>
-                                    </td>
-                                    <td>
-                                        <p class="text-xs font-weight-bold mb-0">{{ vale.destinatario_nome }}</p>
-                                    </td>
-                                    <td>
-                                        <p class="text-xs font-weight-bold mb-0">{{ vale.motorista.nome if vale.motorista else '-' }}</p>
-                                    </td>
-                                    <td class="align-middle text-center">
-                                        <span class="text-secondary text-xs font-weight-bold">{{ vale.quantidade_pallets }}</span>
-                                    </td>
-                                    <td class="align-middle text-center text-sm">
-                                        <span class="text-secondary text-sm font-weight-bold">{{ vale.get_status_display() }}</span>
-                                    </td>
-                                    <td class="align-middle text-center">
-                                        <span class="text-secondary text-xs font-weight-bold">{{ vale.data_criacao.strftime('%d/%m/%Y') }}</span>
-                                        <br>
-                                        <span class="text-secondary text-xxs">{{ vale.data_criacao.strftime('%H:%M') }}</span>
-                                    </td>
-                                    <td class="align-middle">
-                                        <a href="{{ url_for('vale_pallet.visualizar', id=vale.id) }}" class="text-secondary font-weight-bold text-xs" data-toggle="tooltip" data-original-title="Visualizar vale">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-sm bg-gradient-info">{{ vale.pin }}</span>
+                                        </td>
+                                        <td>
+                                            <p class="text-xs font-weight-bold mb-0">{{ vale.cliente_nome }}</p>
+                                        </td>
+                                        <td>
+                                            <p class="text-xs font-weight-bold mb-0">{{ vale.transportadora_nome }}</p>
+                                        </td>
+                                        <td>
+                                            <p class="text-xs font-weight-bold mb-0">{{ vale.destinatario_nome }}</p>
+                                        </td>
+                                        <td>
+                                            <p class="text-xs font-weight-bold mb-0">{{ vale.motorista.nome if vale.motorista else '-' }}</p>
+                                        </td>
+                                        <td class="align-middle text-center">
+                                            <span class="text-secondary text-xs font-weight-bold">{{ vale.quantidade_pallets }}</span>
+                                        </td>
+                                        <td class="align-middle text-center">
+                                            <span class="badge badge-sm bg-gradient-{{ 'success' if (vale.quantidade_pallets - vale.quantidade_devolvida) > 0 else 'secondary' }}">
+                                                {{ vale.quantidade_pallets - vale.quantidade_devolvida }}
+                                            </span>
+                                        </td>
+                                        <td class="align-middle text-center text-sm">
+                                            <span class="badge badge-sm bg-gradient-{{ vale.get_status_badge_class().replace('badge-', '') }}">
+                                                {{ vale.get_status_display() }}
+                                            </span>
+                                        </td>
+                                        <td class="align-middle text-center">
+                                            <span class="text-secondary text-xs font-weight-bold">{{ vale.data_criacao.strftime('%d/%m/%Y') }}</span>
+                                            <br>
+                                            <span class="text-secondary text-xxs">{{ vale.data_criacao.strftime('%H:%M') }}</span>
+                                        </td>
+                                        <td class="align-middle">
+                                            <a href="{{ url_for('vale_pallet.visualizar', id=vale.id) }}" class="text-secondary font-weight-bold text-xs" data-toggle="tooltip" data-original-title="Visualizar vale">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
+                    {% endif %}
+                    
+                    <!-- Tabela de Devoluções -->
+                    {% if filtro_tipo_relatorio in ['devolucoes', 'consolidado'] and devolucoes %}
+                    <div class="px-4 pb-3">
+                        <h6 class="text-uppercase text-body text-xs font-weight-bolder mb-3 mt-4">
+                            <i class="fas fa-undo me-2"></i>Devoluções de Pallets ({{ total_devolucoes }})
+                        </h6>
+                        <div class="table-responsive p-0">
+                            <table class="table align-items-center mb-0">
+                                <thead>
+                                    <tr>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">ID</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">PIN</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Cliente</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Transportadora</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Destinatário</th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Motorista</th>
+                                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Pallets</th>
+                                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
+                                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Data Agendamento</th>
+                                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Data Coleta</th>
+                                        <th class="text-secondary opacity-7"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for dev in devolucoes %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex px-2 py-1">
+                                                <div class="d-flex flex-column justify-content-center">
+                                                    <h6 class="mb-0 text-sm">#{{ dev.id }}</h6>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-sm bg-gradient-success">{{ dev.pin_devolucao }}</span>
+                                        </td>
+                                        <td>
+                                            <p class="text-xs font-weight-bold mb-0">{{ dev.cliente.razao_social if dev.cliente else '-' }}</p>
+                                        </td>
+                                        <td>
+                                            <p class="text-xs font-weight-bold mb-0">{{ dev.transportadora.razao_social if dev.transportadora else '-' }}</p>
+                                        </td>
+                                        <td>
+                                            <p class="text-xs font-weight-bold mb-0">{{ dev.destinatario.razao_social if dev.destinatario else '-' }}</p>
+                                        </td>
+                                        <td>
+                                            <p class="text-xs font-weight-bold mb-0">{{ dev.motorista.nome if dev.motorista else '-' }}</p>
+                                        </td>
+                                        <td class="align-middle text-center">
+                                            <span class="text-secondary text-xs font-weight-bold">{{ dev.quantidade_pallets }}</span>
+                                        </td>
+                                        <td class="align-middle text-center text-sm">
+                                            <span class="badge badge-sm bg-gradient-{{ dev.get_status_badge_class().replace('badge-', '') }}">
+                                                {{ dev.get_status_display() }}
+                                            </span>
+                                        </td>
+                                        <td class="align-middle text-center">
+                                            <span class="text-secondary text-xs font-weight-bold">{{ dev.data_agendamento.strftime('%d/%m/%Y') }}</span>
+                                        </td>
+                                        <td class="align-middle text-center">
+                                            {% if dev.data_coleta %}
+                                                <span class="text-secondary text-xs font-weight-bold">{{ dev.data_coleta.strftime('%d/%m/%Y') }}</span>
+                                                <br>
+                                                <span class="text-secondary text-xxs">{{ dev.data_coleta.strftime('%H:%M') }}</span>
+                                            {% else %}
+                                                <span class="text-secondary text-xs">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="align-middle">
+                                            <a href="{{ url_for('devolucao_pallet.visualizar', id=dev.id) }}" class="text-secondary font-weight-bold text-xs" data-toggle="tooltip" data-original-title="Visualizar devolução">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endif %}
                     
                 {% else %}
                     <div class="px-4 py-5 text-center">
                         <i class="fas fa-inbox fa-3x text-secondary mb-3"></i>
-                        <p class="text-secondary mb-0">Nenhum vale encontrado com os filtros selecionados.</p>
+                        <p class="text-secondary mb-0">Nenhum registro encontrado com os filtros selecionados.</p>
                     </div>
                 {% endif %}
             </div>
@@ -163,7 +327,7 @@
 
 <style>
 @media print {
-    .sidebar, .navbar, .btn, .page-header, form {
+    .sidebar, .navbar, .btn, .page-header, form, .no-print {
         display: none !important;
     }
     .card {
@@ -171,4 +335,16 @@
     }
 }
 </style>
+
+<script>
+// Auto-submit ao mudar tipo de relatório
+document.addEventListener('DOMContentLoaded', function() {
+    const radioButtons = document.querySelectorAll('input[name="tipo_relatorio"]');
+    radioButtons.forEach(radio => {
+        radio.addEventListener('change', function() {
+            this.form.submit();
+        });
+    });
+});
+</script>
 {% endblock %}

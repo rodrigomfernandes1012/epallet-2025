@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Validar PIN de Devolução - Sistema de Gestão Epallet</title>
+    
+    <!-- Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Argon CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/argon-dashboard.min.css') }}">
+    
+    <style>
+        .pin-input {
+            font-size: 1.5rem;
+            text-align: center;
+            letter-spacing: 0.5rem;
+            font-weight: bold;
+        }
+        
+        .security-badge {
+            background: linear-gradient(87deg, #11cdef 0, #1171ef 100%);
+            color: white;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body class="">
+    <main class="main-content mt-0">
+        <section>
+            <div class="page-header min-vh-100">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-xl-5 col-lg-6 col-md-7 d-flex flex-column mx-auto">
+                            <div class="card card-plain">
+                                <div class="card-header pb-0 text-start">
+                                    <h4 class="font-weight-bolder">Validar PIN de Devolução</h4>
+                                    <p class="mb-0">Digite o PIN recebido para confirmar a coleta de pallets</p>
+                                </div>
+                                
+                                <div class="card-body">
+                                    <!-- Flash Messages -->
+                                    {% with messages = get_flashed_messages(with_categories=true) %}
+                                        {% if messages %}
+                                            {% for category, message in messages %}
+                                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                                                    <span class="alert-text">{{ message }}</span>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endwith %}
+                                    
+                                    <!-- Badge de Segurança -->
+                                    <div class="security-badge text-center">
+                                        <i class="fas fa-shield-alt fa-2x mb-2"></i>
+                                        <h6 class="text-white mb-1">Área Segura de Validação</h6>
+                                        <p class="text-white text-sm mb-0 opacity-8">
+                                            O PIN de 6 dígitos foi enviado via WhatsApp para o motorista responsável
+                                        </p>
+                                    </div>
+                                    
+                                    <!-- Formulário de Validação -->
+                                    <form role="form" method="POST" action="">
+                                        {{ form.hidden_tag() }}
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">{{ form.pin_devolucao.label.text }}</label>
+                                            {{ form.pin_devolucao(class="form-control form-control-lg pin-input" + (" is-invalid" if form.pin_devolucao.errors else ""), 
+                                                                  placeholder="000000", 
+                                                                  maxlength="6",
+                                                                  id="pin_devolucao",
+                                                                  autofocus=true) }}
+                                            {% if form.pin_devolucao.errors %}
+                                                <div class="invalid-feedback">
+                                                    {% for error in form.pin_devolucao.errors %}{{ error }}{% endfor %}
+                                                </div>
+                                            {% endif %}
+                                            <small class="form-text text-muted">
+                                                <i class="fas fa-info-circle me-1"></i>
+                                                Digite apenas os 6 dígitos numéricos recebidos
+                                            </small>
+                                        </div>
+                                        
+                                        <!-- Instruções -->
+                                        <div class="alert alert-light border">
+                                            <h6 class="text-dark mb-2">
+                                                <i class="fas fa-question-circle me-2"></i>
+                                                Como Funciona:
+                                            </h6>
+                                            <ol class="mb-0 ps-3">
+                                                <li class="text-sm">O motorista recebe o PIN via WhatsApp ao criar a devolução</li>
+                                                <li class="text-sm">Digite o PIN exatamente como foi enviado (6 dígitos)</li>
+                                                <li class="text-sm">Após validação, você verá as informações da coleta</li>
+                                                <li class="text-sm">Colete os pallets e aguarde confirmação no sistema</li>
+                                            </ol>
+                                        </div>
+                                        
+                                        <div class="text-center">
+                                            <button type="submit" class="btn btn-lg btn-success btn-lg w-100 mt-3 mb-0">
+                                                <i class="fas fa-check me-2"></i>{{ form.submit.label.text }}
+                                            </button>
+                                        </div>
+                                    </form>
+                                    
+                                    <!-- Ajuda -->
+                                    <div class="mt-4 text-center">
+                                        <p class="text-sm text-muted mb-0">
+                                            <i class="fas fa-headset me-1"></i>
+                                            Não recebeu o PIN? Entre em contato com o suporte ou verifique o WhatsApp do motorista.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <!-- Core JS Files -->
+    <script src="{{ url_for('static', filename='js/core/popper.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/core/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/argon-dashboard.min.js') }}"></script>
+    
+    <script>
+    // Auto-focus e validação do campo PIN
+    document.addEventListener('DOMContentLoaded', function() {
+        const pinInput = document.getElementById('pin_devolucao');
+        
+        if (pinInput) {
+            pinInput.focus();
+            
+            // Permitir apenas números
+            pinInput.addEventListener('input', function(e) {
+                this.value = this.value.replace(/[^0-9]/g, '');
+            });
+            
+            // Submit automático ao digitar 6 dígitos
+            pinInput.addEventListener('input', function(e) {
+                if (this.value.length === 6) {
+                    // Aguardar 500ms e submeter
+                    setTimeout(function() {
+                        document.querySelector('form').submit();
+                    }, 500);
+                }
+            });
+        }
+    });
+    </script>
+</body>
+</html>

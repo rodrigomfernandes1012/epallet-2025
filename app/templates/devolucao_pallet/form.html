@@ -1,0 +1,168 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header pb-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6>{{ titulo }}</h6>
+                        <a href="{{ url_for('devolucao_pallet.listar') }}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left me-2"></i>Voltar
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <form method="POST" action="">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row">
+                            <!-- Cliente -->
+                            <div class="col-md-4 mb-3">
+                                <label for="cliente_id" class="form-label">{{ form.cliente_id.label.text }} <span class="text-danger">*</span></label>
+                                {{ form.cliente_id(class="form-select" + (" is-invalid" if form.cliente_id.errors else ""), id="cliente_id") }}
+                                {% if form.cliente_id.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.cliente_id.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="form-text text-muted">De quem vai buscar os pallets</small>
+                            </div>
+                            
+                            <!-- Destinatário -->
+                            <div class="col-md-4 mb-3">
+                                <label for="destinatario_id" class="form-label">{{ form.destinatario_id.label.text }} <span class="text-danger">*</span></label>
+                                {{ form.destinatario_id(class="form-select" + (" is-invalid" if form.destinatario_id.errors else ""), id="destinatario_id") }}
+                                {% if form.destinatario_id.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.destinatario_id.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="form-text text-muted">Para quem vai devolver</small>
+                            </div>
+                            
+                            <!-- Transportadora -->
+                            <div class="col-md-4 mb-3">
+                                <label for="transportadora_id" class="form-label">{{ form.transportadora_id.label.text }} <span class="text-danger">*</span></label>
+                                {{ form.transportadora_id(class="form-select" + (" is-invalid" if form.transportadora_id.errors else ""), id="transportadora_id") }}
+                                {% if form.transportadora_id.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.transportadora_id.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <!-- Motorista -->
+                            <div class="col-md-4 mb-3">
+                                <label for="motorista_id" class="form-label">{{ form.motorista_id.label.text }}</label>
+                                {{ form.motorista_id(class="form-select" + (" is-invalid" if form.motorista_id.errors else ""), id="motorista_id") }}
+                                {% if form.motorista_id.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.motorista_id.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="form-text text-muted">Opcional - pode ser definido depois</small>
+                            </div>
+                            
+                            <!-- Quantidade -->
+                            <div class="col-md-4 mb-3">
+                                <label for="quantidade_pallets" class="form-label">{{ form.quantidade_pallets.label.text }} <span class="text-danger">*</span></label>
+                                {{ form.quantidade_pallets(class="form-control" + (" is-invalid" if form.quantidade_pallets.errors else ""), id="quantidade_pallets") }}
+                                {% if form.quantidade_pallets.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.quantidade_pallets.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="form-text text-muted">Saldo disponível: <span id="saldo-disponivel">-</span></small>
+                            </div>
+                            
+                            <!-- Data de Agendamento -->
+                            <div class="col-md-4 mb-3">
+                                <label for="data_agendamento" class="form-label">{{ form.data_agendamento.label.text }} <span class="text-danger">*</span></label>
+                                {{ form.data_agendamento(class="form-control" + (" is-invalid" if form.data_agendamento.errors else ""), id="data_agendamento") }}
+                                {% if form.data_agendamento.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.data_agendamento.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <!-- Observações -->
+                            <div class="col-md-12 mb-3">
+                                <label for="observacoes" class="form-label">{{ form.observacoes.label.text }}</label>
+                                {{ form.observacoes(class="form-control" + (" is-invalid" if form.observacoes.errors else ""), rows=3, id="observacoes") }}
+                                {% if form.observacoes.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.observacoes.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save me-2"></i>{{ form.submit.label.text }}
+                                </button>
+                                <a href="{{ url_for('devolucao_pallet.listar') }}" class="btn btn-secondary">
+                                    <i class="fas fa-times me-2"></i>Cancelar
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Consultar saldo disponível quando cliente e destinatário forem selecionados
+document.addEventListener('DOMContentLoaded', function() {
+    const clienteSelect = document.getElementById('cliente_id');
+    const destinatarioSelect = document.getElementById('destinatario_id');
+    const saldoSpan = document.getElementById('saldo-disponivel');
+    
+    function consultarSaldo() {
+        const clienteId = clienteSelect.value;
+        const destinatarioId = destinatarioSelect.value;
+        
+        if (clienteId && clienteId != '0' && destinatarioId && destinatarioId != '0') {
+            fetch(`{{ url_for('devolucao_pallet.api_saldo', cliente_id=0, destinatario_id=0) }}`.replace('/0/0', `/${clienteId}/${destinatarioId}`))
+                .then(response => response.json())
+                .then(data => {
+                    if (data.sucesso) {
+                        saldoSpan.textContent = data.saldo + ' pallets';
+                        saldoSpan.className = data.saldo > 0 ? 'text-success fw-bold' : 'text-danger fw-bold';
+                    } else {
+                        saldoSpan.textContent = 'Erro ao consultar';
+                        saldoSpan.className = 'text-danger';
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    saldoSpan.textContent = 'Erro ao consultar';
+                    saldoSpan.className = 'text-danger';
+                });
+        } else {
+            saldoSpan.textContent = '-';
+            saldoSpan.className = '';
+        }
+    }
+    
+    clienteSelect.addEventListener('change', consultarSaldo);
+    destinatarioSelect.addEventListener('change', consultarSaldo);
+    
+    // Consultar saldo inicial se já tiver valores
+    consultarSaldo();
+});
+</script>
+{% endblock %}

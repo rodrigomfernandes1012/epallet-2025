@@ -28,7 +28,7 @@ def create_app(config_name=None):
     login_manager.login_message_category = 'info'
     
     # Registrar blueprints
-    from app.routes import auth, main, empresas, tipos_empresa, motoristas, vale_pallet, publico, logs, relatorios, webhook, usuarios, perfis, empresa_emails, emails
+    from app.routes import devolucao_pallet, emails, auth, main, empresas, tipos_empresa, motoristas, vale_pallet, publico, logs, relatorios, webhook, usuarios, perfis, empresa_emails
     
     app.register_blueprint(auth.bp)
     app.register_blueprint(main.bp)
@@ -44,6 +44,8 @@ def create_app(config_name=None):
     app.register_blueprint(perfis.perfis_bp)  # Gestão de perfis
     app.register_blueprint(empresa_emails.empresa_emails_bp)  # Gestão de emails por empresa
     app.register_blueprint(emails.emails_bp)  # Consulta de emails enviados
+    app.register_blueprint(devolucao_pallet.devolucao_pallet_bp)
+
     
     # Criar tabelas do banco de dados
     with app.app_context():

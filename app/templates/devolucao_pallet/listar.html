@@ -1,0 +1,182 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Devoluções de Pallets{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6>Devoluções de Pallets</h6>
+                        {% if current_user.tem_permissao('devolucao_pallet', 'criar') %}
+                        <a href="{{ url_for('devolucao_pallet.novo') }}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus me-2"></i>Nova Devolução
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Filtros -->
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Status</label>
+                            <select name="status" class="form-select">
+                                <option value="">Todos</option>
+                                <option value="agendado" {{ 'selected' if status_filtro == 'agendado' }}>Agendado</option>
+                                <option value="coletado" {{ 'selected' if status_filtro == 'coletado' }}>Coletado</option>
+                                <option value="finalizado" {{ 'selected' if status_filtro == 'finalizado' }}>Finalizado</option>
+                                <option value="cancelado" {{ 'selected' if status_filtro == 'cancelado' }}>Cancelado</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label class="form-label">Cliente</label>
+                            <select name="cliente" class="form-select">
+                                <option value="">Todos</option>
+                                {% for cliente in clientes %}
+                                <option value="{{ cliente.id }}" {{ 'selected' if cliente_filtro == cliente.id }}>
+                                    {{ cliente.razao_social }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label class="form-label">Destinatário</label>
+                            <select name="destinatario" class="form-select">
+                                <option value="">Todos</option>
+                                {% for dest in destinatarios %}
+                                <option value="{{ dest.id }}" {{ 'selected' if destinatario_filtro == dest.id }}>
+                                    {{ dest.razao_social }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-info me-2">
+                                <i class="fas fa-filter me-2"></i>Filtrar
+                            </button>
+                            <a href="{{ url_for('devolucao_pallet.listar') }}" class="btn btn-secondary">
+                                <i class="fas fa-times me-2"></i>Limpar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Tabela -->
+                <div class="table-responsive">
+                    <table class="table align-items-center mb-0">
+                        <thead>
+                            <tr>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">ID</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Data Agendamento</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Cliente</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Destinatário</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Transportadora</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Quantidade</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
+                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for devolucao in devolucoes.items %}
+                            <tr>
+                                <td>
+                                    <p class="text-xs font-weight-bold mb-0">#{{ devolucao.id }}</p>
+                                </td>
+                                <td>
+                                    <p class="text-xs font-weight-bold mb-0">{{ devolucao.data_agendamento.strftime('%d/%m/%Y') }}</p>
+                                </td>
+                                <td>
+                                    <p class="text-xs font-weight-bold mb-0">{{ devolucao.cliente.razao_social }}</p>
+                                </td>
+                                <td>
+                                    <p class="text-xs font-weight-bold mb-0">{{ devolucao.destinatario.razao_social }}</p>
+                                </td>
+                                <td>
+                                    <p class="text-xs font-weight-bold mb-0">{{ devolucao.transportadora.razao_social }}</p>
+                                </td>
+                                <td class="align-middle text-center">
+                                    <span class="text-secondary text-xs font-weight-bold">{{ devolucao.quantidade_pallets }}</span>
+                                </td>
+                                <td class="align-middle text-center text-sm">
+                                    <span class="badge badge-sm {{ devolucao.get_status_badge_class() }}">
+                                        {{ devolucao.get_status_display() }}
+                                    </span>
+                                </td>
+                                <td class="align-middle text-center">
+                                    <a href="{{ url_for('devolucao_pallet.visualizar', id=devolucao.id) }}" 
+                                       class="btn btn-link text-secondary mb-0" 
+                                       data-bs-toggle="tooltip" 
+                                       title="Visualizar">
+                                        <i class="fas fa-eye text-lg"></i>
+                                    </a>
+                                    
+                                    {% if current_user.tem_permissao('devolucao_pallet', 'editar') and devolucao.status == 'agendado' %}
+                                    <a href="{{ url_for('devolucao_pallet.editar', id=devolucao.id) }}" 
+                                       class="btn btn-link text-secondary mb-0" 
+                                       data-bs-toggle="tooltip" 
+                                       title="Editar">
+                                        <i class="fas fa-edit text-lg"></i>
+                                    </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="8" class="text-center">
+                                    <p class="text-xs text-secondary mb-0">Nenhuma devolução encontrada</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Paginação -->
+                {% if devolucoes.pages > 1 %}
+                <div class="card-footer">
+                    <nav aria-label="Navegação de página">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item {{ 'disabled' if not devolucoes.has_prev }}">
+                                <a class="page-link" href="{{ url_for('devolucao_pallet.listar', page=devolucoes.prev_num, status=status_filtro, cliente=cliente_filtro, destinatario=destinatario_filtro) if devolucoes.has_prev else '#' }}">
+                                    <i class="fas fa-angle-left"></i>
+                                </a>
+                            </li>
+                            
+                            {% for page_num in devolucoes.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                                {% if page_num %}
+                                    <li class="page-item {{ 'active' if page_num == devolucoes.page }}">
+                                        <a class="page-link" href="{{ url_for('devolucao_pallet.listar', page=page_num, status=status_filtro, cliente=cliente_filtro, destinatario=destinatario_filtro) }}">
+                                            {{ page_num }}
+                                        </a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            <li class="page-item {{ 'disabled' if not devolucoes.has_next }}">
+                                <a class="page-link" href="{{ url_for('devolucao_pallet.listar', page=devolucoes.next_num, status=status_filtro, cliente=cliente_filtro, destinatario=destinatario_filtro) if devolucoes.has_next else '#' }}">
+                                    <i class="fas fa-angle-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                    
+                    <p class="text-xs text-secondary text-center mb-0">
+                        Mostrando {{ devolucoes.items|length }} de {{ devolucoes.total }} devoluções
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,139 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Cancelar Devolução{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header pb-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6>Cancelar Devolução #{{ devolucao.id }}</h6>
+                        <a href="{{ url_for('devolucao_pallet.visualizar', id=devolucao.id) }}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left me-2"></i>Voltar
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Informações da Devolução -->
+                    <div class="alert alert-info">
+                        <h6 class="text-dark mb-3">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Informações da Devolução
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="text-sm mb-1"><strong>Cliente:</strong> {{ devolucao.cliente.razao_social }}</p>
+                                <p class="text-sm mb-1"><strong>Destinatário:</strong> {{ devolucao.destinatario.razao_social }}</p>
+                                <p class="text-sm mb-1"><strong>Transportadora:</strong> {{ devolucao.transportadora.razao_social }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="text-sm mb-1"><strong>Quantidade:</strong> {{ devolucao.quantidade_pallets }} pallets</p>
+                                <p class="text-sm mb-1"><strong>Data Agendamento:</strong> {{ devolucao.data_agendamento.strftime('%d/%m/%Y') }}</p>
+                                <p class="text-sm mb-1"><strong>Status:</strong> 
+                                    <span class="badge {{ devolucao.get_status_badge_class() }}">{{ devolucao.get_status_display() }}</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Aviso de Cancelamento -->
+                    <div class="alert alert-danger">
+                        <h6 class="text-dark mb-2">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Atenção: Cancelamento de Devolução
+                        </h6>
+                        <p class="text-sm mb-0">
+                            Ao cancelar esta devolução, ela não poderá mais ser processada. 
+                            {% if devolucao.status == 'coletado' %}
+                            <strong class="text-danger">A coleta já foi confirmada pelo motorista!</strong> 
+                            Certifique-se de que realmente deseja cancelar.
+                            {% endif %}
+                        </p>
+                    </div>
+                    
+                    <!-- Formulário -->
+                    <form method="POST" action="">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="motivo_cancelamento" class="form-label">
+                                    {{ form.motivo_cancelamento.label.text }} <span class="text-danger">*</span>
+                                </label>
+                                {{ form.motivo_cancelamento(class="form-control" + (" is-invalid" if form.motivo_cancelamento.errors else ""), 
+                                                           rows=4, 
+                                                           id="motivo_cancelamento", 
+                                                           placeholder="Descreva o motivo do cancelamento...",
+                                                           required=true) }}
+                                {% if form.motivo_cancelamento.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.motivo_cancelamento.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                                <small class="form-text text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    O motivo do cancelamento será registrado e ficará visível no histórico
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="alert alert-warning">
+                                    <h6 class="text-dark mb-2">
+                                        <i class="fas fa-list-check me-2"></i>
+                                        O que acontecerá ao cancelar:
+                                    </h6>
+                                    <ul class="mb-0 ps-3">
+                                        <li class="text-sm">Status mudará para <strong>Cancelado</strong></li>
+                                        <li class="text-sm">Devolução não poderá mais ser processada</li>
+                                        <li class="text-sm">Motivo ficará registrado no histórico</li>
+                                        <li class="text-sm">Será necessário criar nova devolução se necessário</li>
+                                        {% if devolucao.status == 'coletado' %}
+                                        <li class="text-sm text-danger"><strong>A coleta já foi confirmada - verifique com o motorista!</strong></li>
+                                        {% endif %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="fas fa-times me-2"></i>{{ form.submit.label.text }}
+                                </button>
+                                <a href="{{ url_for('devolucao_pallet.visualizar', id=devolucao.id) }}" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left me-2"></i>Voltar sem Cancelar
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Confirmação antes de enviar
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const motivo = document.getElementById('motivo_cancelamento').value.trim();
+        if (motivo.length < 10) {
+            e.preventDefault();
+            alert('Por favor, descreva o motivo do cancelamento com mais detalhes (mínimo 10 caracteres).');
+            return false;
+        }
+        
+        if (!confirm('Tem certeza que deseja CANCELAR esta devolução? Esta ação não poderá ser desfeita.')) {
+            e.preventDefault();
+            return false;
+        }
+    });
+});
+</script>
+{% endblock %}

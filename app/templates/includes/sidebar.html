@@ -66,11 +66,15 @@
             {% endif %}
             
             {# Seção Operações #}
-            {% if current_user.tem_permissao('vale_pallet', 'visualizar') or not current_user.perfil_id %}
+            {% set tem_operacoes = current_user.tem_permissao('vale_pallet', 'visualizar') or 
+                                   current_user.tem_permissao('devolucao_pallet', 'visualizar') %}
+            
+            {% if tem_operacoes or not current_user.perfil_id %}
             <li class="nav-item mt-3">
                 <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Operações</h6>
             </li>
             
+            {% if current_user.tem_permissao('vale_pallet', 'visualizar') or not current_user.perfil_id %}
             <li class="nav-item">
                 <a class="nav-link {% if request.endpoint and 'vale_pallet' in request.endpoint %}active{% endif %}" href="{{ url_for('vale_pallet.listar') }}">
                     <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
@@ -79,6 +83,18 @@
                     <span class="nav-link-text ms-1">Vale Pallet</span>
                 </a>
             </li>
+            {% endif %}
+            
+            {% if current_user.tem_permissao('devolucao_pallet', 'visualizar') or not current_user.perfil_id %}
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint and 'devolucao_pallet' in request.endpoint and 'validar_pin' not in request.endpoint %}active{% endif %}" href="{{ url_for('devolucao_pallet.listar') }}">
+                    <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="fas fa-undo text-primary text-sm opacity-10"></i>
+                    </div>
+                    <span class="nav-link-text ms-1">Devoluções de Pallets</span>
+                </a>
+            </li>
+            {% endif %}
             {% endif %}
             
             {# Seção Acesso Público - Sempre visível #}
@@ -100,7 +116,16 @@
                     <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
                         <i class="fas fa-key text-info text-sm opacity-10"></i>
                     </div>
-                    <span class="nav-link-text ms-1">Validar PIN</span>
+                    <span class="nav-link-text ms-1">Validar PIN (Envio)</span>
+                </a>
+            </li>
+            
+            <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('devolucao_pallet.validar_pin') }}" target="_blank">
+                    <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="fas fa-truck-loading text-success text-sm opacity-10"></i>
+                    </div>
+                    <span class="nav-link-text ms-1">Validar PIN (Devolução)</span>
                 </a>
             </li>
             
@@ -138,7 +163,8 @@
             
             {# Seção Administração #}
             {% set tem_admin = current_user.tem_permissao('usuarios', 'visualizar') or 
-                               current_user.tem_permissao('perfis', 'visualizar') %}
+                               current_user.tem_permissao('perfis', 'visualizar') or 
+                               current_user.tem_permissao('emails', 'visualizar') %}
             
             {% if tem_admin %}
             <li class="nav-item mt-3">
@@ -163,6 +189,17 @@
                         <i class="fas fa-user-shield text-warning text-sm opacity-10"></i>
                     </div>
                     <span class="nav-link-text ms-1">Perfis</span>
+                </a>
+            </li>
+            {% endif %}
+            
+            {% if current_user.tem_permissao('emails', 'visualizar') %}
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint and 'emails' in request.endpoint %}active{% endif %}" href="{{ url_for('emails.listar') }}">
+                    <div class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="fas fa-envelope text-info text-sm opacity-10"></i>
+                    </div>
+                    <span class="nav-link-text ms-1">Emails Enviados</span>
                 </a>
             </li>
             {% endif %}

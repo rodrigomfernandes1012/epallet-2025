@@ -1,0 +1,106 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Confirmar Devolução{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header pb-0">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6>Confirmar Devolução #{{ devolucao.id }}</h6>
+                        <a href="{{ url_for('devolucao_pallet.visualizar', id=devolucao.id) }}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left me-2"></i>Voltar
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="card-body">
+                    <!-- Informações da Devolução -->
+                    <div class="alert alert-info">
+                        <h6 class="text-dark mb-3">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Informações da Devolução
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="text-sm mb-1"><strong>Cliente:</strong> {{ devolucao.cliente.razao_social }}</p>
+                                <p class="text-sm mb-1"><strong>Destinatário:</strong> {{ devolucao.destinatario.razao_social }}</p>
+                                <p class="text-sm mb-1"><strong>Transportadora:</strong> {{ devolucao.transportadora.razao_social }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="text-sm mb-1"><strong>Quantidade:</strong> {{ devolucao.quantidade_pallets }} pallets</p>
+                                <p class="text-sm mb-1"><strong>Data Agendamento:</strong> {{ devolucao.data_agendamento.strftime('%d/%m/%Y') }}</p>
+                                <p class="text-sm mb-1"><strong>Status:</strong> 
+                                    <span class="badge {{ devolucao.get_status_badge_class() }}">{{ devolucao.get_status_display() }}</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Aviso sobre FIFO -->
+                    <div class="alert alert-warning">
+                        <h6 class="text-dark mb-2">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Atenção: Baixa Automática FIFO
+                        </h6>
+                        <p class="text-sm mb-0">
+                            Ao confirmar esta devolução, o sistema irá processar automaticamente a baixa nos vales pallet 
+                            usando a lógica <strong>FIFO (First In, First Out)</strong>, ou seja, os vales mais antigos 
+                            serão baixados primeiro.
+                        </p>
+                    </div>
+                    
+                    <!-- Formulário -->
+                    <form method="POST" action="">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="observacoes" class="form-label">{{ form.observacoes.label.text }}</label>
+                                {{ form.observacoes(class="form-control" + (" is-invalid" if form.observacoes.errors else ""), rows=3, id="observacoes", placeholder="Adicione observações sobre a confirmação (opcional)") }}
+                                {% if form.observacoes.errors %}
+                                    <div class="invalid-feedback">
+                                        {% for error in form.observacoes.errors %}{{ error }}{% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="alert alert-success">
+                                    <h6 class="text-dark mb-2">
+                                        <i class="fas fa-check-circle me-2"></i>
+                                        O que acontecerá ao confirmar:
+                                    </h6>
+                                    <ol class="mb-0 ps-3">
+                                        <li class="text-sm">Sistema buscará vales pallet mais antigos do cliente</li>
+                                        <li class="text-sm">Baixará automaticamente {{ devolucao.quantidade_pallets }} pallets</li>
+                                        <li class="text-sm">Atualizará saldo de cada vale afetado</li>
+                                        <li class="text-sm">Finalizará vales totalmente devolvidos</li>
+                                        <li class="text-sm">Mudará status da devolução para <strong>Finalizado</strong></li>
+                                        <li class="text-sm">Registrará todas as baixas para auditoria</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-3">
+                            <div class="col-md-12">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-check me-2"></i>{{ form.submit.label.text }}
+                                </button>
+                                <a href="{{ url_for('devolucao_pallet.visualizar', id=devolucao.id) }}" class="btn btn-secondary">
+                                    <i class="fas fa-times me-2"></i>Cancelar
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

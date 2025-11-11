@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Coleta Confirmada - Sistema de Gestão Epallet</title>
+    
+    <!-- Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Argon CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/argon-dashboard.min.css') }}">
+    
+    <style>
+        .success-icon {
+            font-size: 5rem;
+            color: #2dce89;
+            animation: scaleIn 0.5s ease-in-out;
+        }
+        
+        @keyframes scaleIn {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        .info-card {
+            background: linear-gradient(87deg, #f5f7fa 0, #c3cfe2 100%);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .info-label {
+            font-size: 0.75rem;
+            color: #67748e;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+        
+        .info-value {
+            font-size: 1rem;
+            color: #252f40;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body class="">
+    <main class="main-content mt-0">
+        <section>
+            <div class="page-header min-vh-100">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-xl-6 col-lg-7 col-md-9 d-flex flex-column mx-auto">
+                            <div class="card card-plain">
+                                <!-- Cabeçalho com Ícone de Sucesso -->
+                                <div class="card-header pb-0 text-center">
+                                    <i class="fas fa-check-circle success-icon mb-3"></i>
+                                    <h3 class="font-weight-bolder text-success">Coleta Confirmada!</h3>
+                                    <p class="mb-0 text-lg">PIN validado com sucesso</p>
+                                </div>
+                                
+                                <div class="card-body">
+                                    <!-- Informações da Coleta -->
+                                    <div class="info-card">
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <div class="info-label">Devolução</div>
+                                                <div class="info-value">#{{ devolucao.id }}</div>
+                                            </div>
+                                            
+                                            <div class="col-md-6 mb-3">
+                                                <div class="info-label">Data Agendada</div>
+                                                <div class="info-value">{{ devolucao.data_agendamento.strftime('%d/%m/%Y') }}</div>
+                                            </div>
+                                            
+                                            <div class="col-md-12 mb-3">
+                                                <div class="info-label">Local da Coleta</div>
+                                                <div class="info-value">{{ devolucao.cliente.razao_social }}</div>
+                                            </div>
+                                            
+                                            <div class="col-md-6 mb-3">
+                                                <div class="info-label">Quantidade</div>
+                                                <div class="info-value">
+                                                    <span class="badge badge-lg bg-gradient-primary">
+                                                        {{ devolucao.quantidade_pallets }} pallets
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-6 mb-3">
+                                                <div class="info-label">Destino</div>
+                                                <div class="info-value">{{ devolucao.destinatario.razao_social }}</div>
+                                            </div>
+                                            
+                                            {% if devolucao.motorista %}
+                                            <div class="col-md-12 mb-0">
+                                                <div class="info-label">Motorista</div>
+                                                <div class="info-value">{{ devolucao.motorista.nome }}</div>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Próximos Passos -->
+                                    <div class="alert alert-info text-white mb-3" role="alert">
+                                        <h6 class="text-white mb-2">
+                                            <i class="fas fa-clipboard-check me-2"></i>
+                                            Próximos Passos:
+                                        </h6>
+                                        <ol class="mb-0 ps-3">
+                                            <li class="text-sm text-white">Coletar os <strong>{{ devolucao.quantidade_pallets }} pallets</strong> no local</li>
+                                            <li class="text-sm text-white">Transportar até <strong>{{ devolucao.destinatario.razao_social }}</strong></li>
+                                            <li class="text-sm text-white">Aguardar confirmação da transportadora no sistema</li>
+                                        </ol>
+                                    </div>
+                                    
+                                    <!-- Observações (se houver) -->
+                                    {% if devolucao.observacoes %}
+                                    <div class="alert alert-warning mb-3" role="alert">
+                                        <h6 class="text-dark mb-2">
+                                            <i class="fas fa-exclamation-triangle me-2"></i>
+                                            Observações Importantes:
+                                        </h6>
+                                        <p class="text-sm mb-0">{{ devolucao.observacoes }}</p>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <!-- Botões de Ação -->
+                                    <div class="text-center mt-4">
+                                        <a href="{{ url_for('devolucao_pallet.validar_pin') }}" class="btn btn-lg btn-secondary w-100 mb-2">
+                                            <i class="fas fa-redo me-2"></i>Validar Outro PIN
+                                        </a>
+                                        <p class="text-sm text-muted mb-0 mt-3">
+                                            <i class="fas fa-shield-alt text-success me-1"></i>
+                                            Coleta registrada com segurança no sistema ePallet
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <!-- Core JS Files -->
+    <script src="{{ url_for('static', filename='js/core/popper.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/core/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/argon-dashboard.min.js') }}"></script>
+    
+    <script>
+    // Auto-redirect após 30 segundos
+    setTimeout(function() {
+        window.location.href = "{{ url_for('devolucao_pallet.validar_pin') }}";
+    }, 30000);
+    </script>
+</body>
+</html>
