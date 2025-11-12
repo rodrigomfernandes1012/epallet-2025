@@ -1,0 +1,168 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Confirmação de Recebimento{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card mb-4">
+                <div class="card-header pb-0">
+                    <div class="d-flex align-items-center">
+                        <h6 class="mb-0">Confirmação de Recebimento de Pallets</h6>
+                    </div>
+                    <p class="text-sm mb-0">Informe os dados para confirmar o recebimento de pallets</p>
+                </div>
+                <div class="card-body">
+                    
+                    {% if not vale %}
+                    <!-- Formulário de Busca -->
+                    <form method="POST">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="cliente_id" class="form-control-label">Cliente</label>
+                                    <select name="cliente_id" id="cliente_id" class="form-control" required>
+                                        <option value="">Selecione o cliente</option>
+                                        {% for cliente in clientes %}
+                                        <option value="{{ cliente.id }}">{{ cliente.razao_social }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="transportadora_id" class="form-control-label">Transportadora</label>
+                                    <select name="transportadora_id" id="transportadora_id" class="form-control" required>
+                                        <option value="">Selecione a transportadora</option>
+                                        {% for transportadora in transportadoras %}
+                                        <option value="{{ transportadora.id }}">{{ transportadora.razao_social }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="numero_documento" class="form-control-label">Número do Documento</label>
+                                    <input type="text" name="numero_documento" id="numero_documento" class="form-control" placeholder="Digite o número do documento" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-search me-2"></i>Buscar Vale
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    {% else %}
+                    <!-- Resultado da Busca -->
+                    <div class="alert alert-success" role="alert">
+                        <strong><i class="fas fa-check-circle me-2"></i>Vale encontrado!</strong>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header pb-0">
+                                    <h6>Informações do Vale</h6>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-sm">
+                                        <tbody>
+                                            <tr>
+                                                <td class="text-sm font-weight-bold">Número do Documento:</td>
+                                                <td class="text-sm">{{ vale.numero_documento }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-sm font-weight-bold">Cliente:</td>
+                                                <td class="text-sm">{{ vale.cliente.razao_social }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-sm font-weight-bold">Transportadora:</td>
+                                                <td class="text-sm">{{ vale.transportadora.razao_social }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-sm font-weight-bold">Destinatário:</td>
+                                                <td class="text-sm">{{ vale.destinatario.razao_social if vale.destinatario else 'Não informado' }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-sm font-weight-bold">Quantidade de Pallets:</td>
+                                                <td class="text-sm">{{ vale.quantidade_pallets }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-sm font-weight-bold">Data de Vencimento:</td>
+                                                <td class="text-sm">{{ vale.data_vencimento.strftime('%d/%m/%Y') }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-sm font-weight-bold">Status:</td>
+                                                <td class="text-sm">
+                                                    <span class="badge badge-sm bg-gradient-{{ vale.get_status_badge_class() }}">
+                                                        {{ vale.get_status_display() }}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header pb-0">
+                                    <h6>PIN de Validação</h6>
+                                </div>
+                                <div class="card-body text-center">
+                                    <div class="alert alert-info" role="alert">
+                                        <i class="fas fa-key fa-2x mb-3"></i>
+                                        <h4 class="text-dark">PIN: <strong>{{ pin_encontrado }}</strong></h4>
+                                        <p class="text-sm mb-0">Informe este PIN ao motorista para validação</p>
+                                    </div>
+                                    
+                                    {% if vale.status == 'pendente_entrega' %}
+                                    <form method="POST" action="{{ url_for('confirmacao.confirmar', vale_id=vale.id) }}">
+                                        <button type="submit" class="btn btn-success btn-lg w-100">
+                                            <i class="fas fa-check me-2"></i>Confirmar Recebimento
+                                        </button>
+                                    </form>
+                                    <p class="text-xs mt-2 mb-0">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Clique para confirmar que os pallets foram recebidos
+                                    </p>
+                                    {% elif vale.status == 'entrega_realizada' %}
+                                    <div class="alert alert-success mb-0" role="alert">
+                                        <i class="fas fa-check-circle me-2"></i>
+                                        Recebimento já confirmado!
+                                    </div>
+                                    {% elif vale.status == 'entrega_concluida' %}
+                                    <div class="alert alert-primary mb-0" role="alert">
+                                        <i class="fas fa-check-double me-2"></i>
+                                        Entrega concluída (PIN validado pelo motorista)
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <a href="{{ url_for('confirmacao.index') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Nova Consulta
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

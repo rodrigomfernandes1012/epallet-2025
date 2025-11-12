@@ -28,7 +28,7 @@ def create_app(config_name=None):
     login_manager.login_message_category = 'info'
     
     # Registrar blueprints
-    from app.routes import devolucao_pallet, emails, auth, main, empresas, tipos_empresa, motoristas, vale_pallet, publico, logs, relatorios, webhook, usuarios, perfis, empresa_emails
+    from app.routes import auth, main, empresas, tipos_empresa, motoristas, vale_pallet, devolucao_pallet, publico, logs, relatorios, webhook, usuarios, perfis, empresa_emails, emails, confirmacao_recebimento
     
     app.register_blueprint(auth.bp)
     app.register_blueprint(main.bp)
@@ -36,7 +36,9 @@ def create_app(config_name=None):
     app.register_blueprint(tipos_empresa.bp)
     app.register_blueprint(motoristas.bp)
     app.register_blueprint(vale_pallet.bp)
+    app.register_blueprint(devolucao_pallet.devolucao_pallet_bp)  # Devoluções de pallets
     app.register_blueprint(publico.publico_bp)  # Rotas públicas (sem login)
+    app.register_blueprint(confirmacao_recebimento.confirmacao_bp)  # Confirmação de recebimento (autenticado)
     app.register_blueprint(logs.bp)
     app.register_blueprint(relatorios.bp)
     app.register_blueprint(webhook.webhook_bp)  # Webhook WhatsApp
@@ -44,8 +46,6 @@ def create_app(config_name=None):
     app.register_blueprint(perfis.perfis_bp)  # Gestão de perfis
     app.register_blueprint(empresa_emails.empresa_emails_bp)  # Gestão de emails por empresa
     app.register_blueprint(emails.emails_bp)  # Consulta de emails enviados
-    app.register_blueprint(devolucao_pallet.devolucao_pallet_bp)
-
     
     # Criar tabelas do banco de dados
     with app.app_context():

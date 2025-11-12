@@ -14,7 +14,8 @@ from app.utils.auditoria import log_acao
 from app.utils.devolucao_service import (
     gerar_pin_devolucao, calcular_saldo_disponivel,
     processar_baixa_fifo, enviar_email_devolucao,
-    enviar_whatsapp_motorista, validar_pin_devolucao
+    enviar_whatsapp_motorista, enviar_whatsapp_motorista_confirmacao,
+    validar_pin_devolucao
 )
 from datetime import datetime
 from sqlalchemy import func, or_
@@ -115,10 +116,15 @@ def novo():
             # Enviar email para destinatário
             resultado_email = enviar_email_devolucao(devolucao.id, current_user.id)
             
-            # Enviar WhatsApp para motorista (se definido)
+            # Enviar WhatsApp para motorista informando agendamento
             resultado_whatsapp = None
             if devolucao.motorista_id:
-                resultado_whatsapp = enviar_whatsapp_motorista(devolucao.id)
+                print(f"[DEBUG] Enviando WhatsApp para motorista ID: {devolucao.motorista_id}")
+                from app.utils.devolucao_service import enviar_whatsapp_agendamento_motorista
+                resultado_whatsapp = enviar_whatsapp_agendamento_motorista(devolucao.id)
+                print(f"[DEBUG] Resultado WhatsApp: {resultado_whatsapp}")
+            else:
+                print("[DEBUG] Motorista não selecionado, WhatsApp não será enviado")
             
             # Mensagem de sucesso
             mensagem = f'Devolução agendada com sucesso!'
@@ -128,8 +134,11 @@ def novo():
             else:
                 mensagem += f' Aviso: {resultado_email["mensagem"]}'
             
-            if resultado_whatsapp and resultado_whatsapp['sucesso']:
-                mensagem += ' WhatsApp enviado ao motorista.'
+            if resultado_whatsapp:
+                if resultado_whatsapp['sucesso']:
+                    mensagem += ' WhatsApp de agendamento enviado ao motorista.'
+                else:
+                    mensagem += f' Aviso WhatsApp: {resultado_whatsapp["mensagem"]}'
             
             flash(mensagem, 'success')
             
@@ -196,15 +205,27 @@ def editar(id):
     
     if form.validate_on_submit():
         try:
+            # Verificar se motorista foi atribuído agora
+            motorista_anterior = devolucao.motorista_id
+            motorista_novo = form.motorista_id.data if form.motorista_id.data != 0 else None
+            motorista_atribuido = (motorista_anterior is None and motorista_novo is not None)
+            
             devolucao.cliente_id = form.cliente_id.data
             devolucao.destinatario_id = form.destinatario_id.data
             devolucao.transportadora_id = form.transportadora_id.data
-            devolucao.motorista_id = form.motorista_id.data if form.motorista_id.data != 0 else None
+            devolucao.motorista_id = motorista_novo
             devolucao.quantidade_pallets = form.quantidade_pallets.data
             devolucao.data_agendamento = form.data_agendamento.data
             devolucao.observacoes = form.observacoes.data
             
             db.session.commit()
+            
+            # Enviar WhatsApp se motorista foi atribuído agora
+            if motorista_atribuido:
+                from app.utils.devolucao_service import enviar_whatsapp_agendamento_motorista
+                resultado_whatsapp = enviar_whatsapp_agendamento_motorista(devolucao.id)
+                if resultado_whatsapp['sucesso']:
+                    flash('WhatsApp de agendamento enviado ao motorista.', 'info')
             
             flash('Devolução atualizada com sucesso!', 'success')
             

@@ -99,22 +99,37 @@ def validacao_pin():
     tipo_mensagem = None
     
     if request.method == 'POST':
-        numero_documento = request.form.get('numero_documento')
-        pin = request.form.get('pin')
+        numero_documento = request.form.get('numero_documento', '').strip()
+        pin = request.form.get('pin', '').strip()
         
         # Validar campos
         if not numero_documento or not pin:
             flash('Por favor, preencha todos os campos.', 'danger')
         else:
+            # Debug: Log da tentativa de validação
+            current_app.logger.info(f'Tentativa de validação - Doc: {numero_documento}, PIN: {pin}')
+            
             # Buscar vale pallet
             vale = ValePallet.query.filter_by(
                 numero_documento=numero_documento,
                 pin=pin
             ).first()
             
+            # Debug: Log do resultado da busca
             if vale:
-                if vale.status == 'entrega_realizada':
+                current_app.logger.info(f'Vale encontrado - ID: {vale.id}, Status: {vale.status}')
+            else:
+                current_app.logger.warning(f'Vale NÃO encontrado - Doc: {numero_documento}, PIN: {pin}')
+                # Verificar se existe vale com esse documento
+                vale_doc = ValePallet.query.filter_by(numero_documento=numero_documento).first()
+                if vale_doc:
+                    current_app.logger.warning(f'Vale existe mas PIN diferente. PIN correto: {vale_doc.pin}')
+            
+            if vale:
+                # Aceitar validação se status for pendente_entrega ou entrega_realizada
+                if vale.status in ['pendente_entrega', 'entrega_realizada']:
                     # Atualizar status para Entrega Concluída
+                    status_anterior = vale.status
                     vale.status = 'entrega_concluida'
                     db.session.commit()
                     
@@ -122,7 +137,7 @@ def validacao_pin():
                     log_acao(
                         modulo='publico',
                         acao='validacao_pin_web',
-                        descricao=f'PIN {pin} validado via web. Vale: {vale.numero_documento}',
+                        descricao=f'PIN {pin} validado via web. Vale: {vale.numero_documento}. Status anterior: {status_anterior}',
                         operacao_sql='UPDATE',
                         tabela_afetada='vales_pallet'
                     )
@@ -142,15 +157,18 @@ def validacao_pin():
                         current_app.logger.error(f'Erro ao enviar WhatsApp: {str(e)}')
                     
                     resultado = 'sucesso'
-                    mensagem = 'Recebimento realizado com sucesso! Entrega concluída.'
+                    if status_anterior == 'pendente_entrega':
+                        mensagem = 'Recebimento validado com sucesso! O destinatário ainda não confirmou, mas a entrega foi concluída.'
+                    else:
+                        mensagem = 'Recebimento realizado com sucesso! Entrega concluída.'
                     tipo_mensagem = 'success'
                 elif vale.status == 'entrega_concluida':
                     resultado = 'sucesso'
                     mensagem = 'Esta entrega já foi validada anteriormente. Entrega concluída.'
                     tipo_mensagem = 'info'
                 else:
-                    resultado = 'pendente'
-                    mensagem = f'O documento foi encontrado, mas está com status: {vale.get_status_display()}. A entrega ainda não foi confirmada pelo destinatário.'
+                    resultado = 'erro'
+                    mensagem = f'O documento foi encontrado, mas está com status: {vale.get_status_display()}. Não é possível validar.'
                     tipo_mensagem = 'warning'
             else:
                 resultado = 'erro'

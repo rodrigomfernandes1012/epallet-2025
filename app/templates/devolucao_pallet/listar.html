@@ -103,11 +103,10 @@
                                 <td class="align-middle text-center">
                                     <span class="text-secondary text-xs font-weight-bold">{{ devolucao.quantidade_pallets }}</span>
                                 </td>
-                                <td class="align-middle text-center text-sm">
-                                    <span class="badge badge-sm {{ devolucao.get_status_badge_class() }}">
-                                        {{ devolucao.get_status_display() }}
-                                    </span>
-                                </td>
+                                 <td class="align-middle text-center text-sm">
+                                        <span class="text-secondary text-sm font-weight-bold">{{ devolucao.get_status_display() }}</span>
+                                    </td>
+
                                 <td class="align-middle text-center">
                                     <a href="{{ url_for('devolucao_pallet.visualizar', id=devolucao.id) }}" 
                                        class="btn btn-link text-secondary mb-0" 

@@ -4,6 +4,7 @@ Lógica FIFO, envio de emails e WhatsApp
 """
 from app import db
 from app.models import DevolucaoPallet, DevolucaoBaixa, ValePallet, EmpresaEmail, EmailEnviado
+from app.utils.whatsapp import enviar_whatsapp
 from datetime import datetime
 from sqlalchemy import func
 import random
@@ -258,9 +259,76 @@ def enviar_email_devolucao(devolucao_id, usuario_id):
         return {'sucesso': False, 'mensagem': f'Erro ao enviar email: {str(e)}'}
 
 
+def enviar_whatsapp_agendamento_motorista(devolucao_id):
+    """
+    Envia WhatsApp para o motorista informando sobre o agendamento da coleta
+    (com PIN de devolução)
+    """
+    try:
+        # Buscar devolução
+        devolucao = DevolucaoPallet.query.get(devolucao_id)
+        if not devolucao:
+            return {'sucesso': False, 'mensagem': 'Devolução não encontrada'}
+        
+        if not devolucao.motorista:
+            return {'sucesso': False, 'mensagem': 'Motorista não definido'}
+        
+        if not devolucao.motorista.celular:
+            return {'sucesso': False, 'mensagem': 'Celular do motorista não cadastrado'}
+        
+        # Log do celular original
+        print(f"[DEBUG WhatsApp] Celular original do motorista: '{devolucao.motorista.celular}'")
+        
+        # Preparar mensagem
+        mensagem = f"""🚚 *COLETA DE PALLETS AGENDADA*
+
+Sr(a) *{devolucao.motorista.nome}*,
+
+Sua coleta de pallets está agendada para *{devolucao.data_agendamento.strftime('%d/%m/%Y')}*, na empresa: *{devolucao.destinatario.razao_social}*.
+
+A quantidade a retirar de pallets é *{devolucao.quantidade_pallets} pallets*.
+
+📍 *Detalhes:*
+• Cliente: {devolucao.cliente.razao_social}
+• Transportadora: {devolucao.transportadora.razao_social}
+{f'• Placa: {devolucao.motorista.placa_caminhao}' if devolucao.motorista.placa_caminhao else ''}
+
+🔑 *PIN DE DEVOLUÇÃO:* {devolucao.pin_devolucao}
+
+⚠️ *IMPORTANTE:* 
+Ao chegar no local, INFORME este PIN ao responsável.
+Este é o código de segurança que autoriza a coleta!
+
+{f'📋 Observações: {devolucao.observacoes}' if devolucao.observacoes else ''}
+
+---
+Sistema ePallet"""
+        
+        # Usar função centralizada de envio de WhatsApp
+        print(f"[DEBUG WhatsApp] Enviando via função enviar_whatsapp()")
+        resultado = enviar_whatsapp(devolucao.motorista.celular, mensagem)
+        
+        if resultado:
+            print(f"[DEBUG WhatsApp] WhatsApp enviado com sucesso!")
+            return {
+                'sucesso': True,
+                'mensagem': 'WhatsApp de agendamento enviado com sucesso'
+            }
+        else:
+            print(f"[DEBUG WhatsApp] Falha ao enviar WhatsApp")
+            return {
+                'sucesso': False,
+                'mensagem': 'Falha ao enviar WhatsApp. Verifique as configurações WHATSGW_APIKEY e WHATSGW_PHONE_NUMBER'
+            }
+            
+    except Exception as e:
+        print(f"[DEBUG WhatsApp] Erro geral: {str(e)}")
+        return {'sucesso': False, 'mensagem': f'Erro ao enviar WhatsApp: {str(e)}'}
+
+
 def enviar_whatsapp_motorista(devolucao_id):
     """
-    Envia WhatsApp para o motorista com informações da coleta e PIN
+    Envia WhatsApp para o motorista com informações da coleta e PIN de segurança
     """
     try:
         # Buscar devolução
@@ -284,11 +352,13 @@ Você deve coletar *{devolucao.quantidade_pallets} pallets* em:
 
 📍 *Local:* {devolucao.cliente.razao_social}
 📅 *Data:* {devolucao.data_agendamento.strftime('%d/%m/%Y')}
-📦 *Destino:* {devolucao.destinatario.razao_social}
+📦 *Destino:* {devolucao.transportadora.razao_social}
 
-🔑 *PIN DE DEVOLUÇÃO:* {devolucao.pin_devolucao}
+🔑 *PIN DE SEGURANÇA:* {devolucao.pin_devolucao}
 
-⚠️ *IMPORTANTE:* Informe este PIN ao responsável no local da coleta.
+⚠️ *IMPORTANTE:* 
+Ao chegar no local, INFORME este PIN ao responsável.
+Este é o código de segurança que autoriza a coleta!
 
 ---
 Sistema ePallet
@@ -369,6 +439,13 @@ def validar_pin_devolucao(pin):
         
         db.session.commit()
         
+        # Enviar WhatsApp ao motorista informando que pode buscar os pallets
+        if devolucao.motorista_id:
+            from app.utils.devolucao_service import enviar_whatsapp_motorista_confirmacao
+            resultado_whatsapp = enviar_whatsapp_motorista_confirmacao(devolucao.id)
+            if resultado_whatsapp['sucesso']:
+                print(f"WhatsApp de confirmação enviado ao motorista: {resultado_whatsapp['mensagem']}")
+        
         return {
             'sucesso': True,
             'mensagem': 'PIN validado com sucesso! Coleta confirmada.',
@@ -379,3 +456,96 @@ def validar_pin_devolucao(pin):
     except Exception as e:
         db.session.rollback()
         return {'sucesso': False, 'mensagem': f'Erro ao validar PIN: {str(e)}'}
+
+
+def enviar_whatsapp_motorista_confirmacao(devolucao_id):
+    """
+    Envia WhatsApp para o motorista informando que pode buscar os pallets
+    (após destinatário validar o PIN)
+    """
+    try:
+        # Buscar devolução
+        devolucao = DevolucaoPallet.query.get(devolucao_id)
+        if not devolucao:
+            return {'sucesso': False, 'mensagem': 'Devolução não encontrada'}
+        
+        if not devolucao.motorista:
+            return {'sucesso': False, 'mensagem': 'Motorista não definido'}
+        
+        if not devolucao.motorista.celular:
+            return {'sucesso': False, 'mensagem': 'Celular do motorista não cadastrado'}
+        
+        # Preparar mensagem
+        mensagem = f"""
+✅ *PIN VALIDADO - COLETA AUTORIZADA!*
+
+Sr(a) Motorista *{devolucao.motorista.nome}*,
+
+O responsável no local validou seu PIN de segurança!
+
+📦 *Quantidade:* {devolucao.quantidade_pallets} pallets
+📍 *Local:* {devolucao.cliente.razao_social}
+🚚 *Transportadora:* {devolucao.transportadora.razao_social}
+
+✅ *PRÓXIMOS PASSOS:*
+1. Colete os {devolucao.quantidade_pallets} pallets
+2. Transporte até {devolucao.transportadora.razao_social}
+3. A transportadora confirmará o recebimento no sistema
+
+---
+Sistema ePallet
+        """.strip()
+        
+        # Configuração WhatsApp API
+        whatsapp_api_url = os.getenv('WHATSAPP_API_URL', '')
+        whatsapp_api_key = os.getenv('WHATSAPP_API_KEY', '')
+        
+        if not whatsapp_api_url or not whatsapp_api_key:
+            # Modo desenvolvimento - apenas simular envio
+            print(f"[MODO DEV] WhatsApp CONFIRMAÇÃO para {devolucao.motorista.celular}:")
+            print(mensagem)
+            return {
+                'sucesso': True,
+                'mensagem': 'WhatsApp de confirmação simulado (modo desenvolvimento)',
+                'modo': 'desenvolvimento'
+            }
+        
+        # Limpar número (remover caracteres não numéricos)
+        numero = ''.join(filter(str.isdigit, devolucao.motorista.celular))
+        
+        # Adicionar código do país se não tiver
+        if not numero.startswith('55'):
+            numero = '55' + numero
+        
+        # Enviar via API
+        try:
+            response = requests.post(
+                f"{whatsapp_api_url}/message/sendText",
+                headers={
+                    'Content-Type': 'application/json',
+                    'apikey': whatsapp_api_key
+                },
+                json={
+                    'number': numero,
+                    'text': mensagem
+                },
+                timeout=10
+            )
+            
+            if response.status_code == 200:
+                return {
+                    'sucesso': True,
+                    'mensagem': 'WhatsApp de confirmação enviado com sucesso',
+                    'numero': numero
+                }
+            else:
+                return {
+                    'sucesso': False,
+                    'mensagem': f'Erro ao enviar WhatsApp: {response.status_code}'
+                }
+                
+        except Exception as e:
+            return {'sucesso': False, 'mensagem': f'Erro ao enviar WhatsApp: {str(e)}'}
+            
+    except Exception as e:
+        return {'sucesso': False, 'mensagem': f'Erro ao enviar WhatsApp: {str(e)}'}
