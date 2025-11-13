@@ -5,7 +5,7 @@
 {% block page_title %}Dashboard{% endblock %}
 
 {% block content %}
-<!-- Cards de Estatísticas -->
+<!-- Cards de Estatísticas Existentes -->
 <div class="row">
     <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
         <div class="card">
@@ -89,6 +89,209 @@
                     <div class="col-4 text-end">
                         <div class="icon icon-shape bg-gradient-info shadow text-center border-radius-md">
                             <i class="fas fa-pallet text-lg opacity-10" aria-hidden="true"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CARDS DE VENCIMENTO (INCLUINDO NOVO CARD DE VENCIDOS) -->
+<div class="row mt-5 mb-4">
+    <div class="col-xl-2 col-sm-6 mb-xl-0 mb-4">
+        <div class="card">
+            <div class="card-body p-3">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="numbers text-center">
+                            <p class="text-xs mb-0 text-capitalize font-weight-bold">Vencidos</p>
+                            <h4 class="font-weight-bolder mb-0" style="color: #8B0000;">
+                                {{ stats.pallets_vencidos }}
+                            </h4>
+                            <p class="text-xs text-secondary mb-0">pallets</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-2 col-sm-6 mb-xl-0 mb-4">
+        <div class="card">
+            <div class="card-body p-3">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="numbers text-center">
+                            <p class="text-xs mb-0 text-capitalize font-weight-bold">Vencendo Hoje</p>
+                            <h4 class="font-weight-bolder mb-0 text-danger">
+                                {{ stats.pallets_vencendo_hoje }}
+                            </h4>
+                            <p class="text-xs text-secondary mb-0">pallets</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-2 col-sm-6 mb-xl-0 mb-4">
+        <div class="card">
+            <div class="card-body p-3">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="numbers text-center">
+                            <p class="text-xs mb-0 text-capitalize font-weight-bold">Em 3 Dias</p>
+                            <h4 class="font-weight-bolder mb-0 text-warning">
+                                {{ stats.pallets_vencendo_3_dias }}
+                            </h4>
+                            <p class="text-xs text-secondary mb-0">pallets</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-2 col-sm-6 mb-xl-0 mb-4">
+        <div class="card">
+            <div class="card-body p-3">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="numbers text-center">
+                            <p class="text-xs mb-0 text-capitalize font-weight-bold">Em 7 Dias</p>
+                            <h4 class="font-weight-bolder mb-0 text-info">
+                                {{ stats.pallets_vencendo_7_dias }}
+                            </h4>
+                            <p class="text-xs text-secondary mb-0">pallets</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-2 col-sm-6 mb-xl-0 mb-4">
+        <div class="card">
+            <div class="card-body p-3">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="numbers text-center">
+                            <p class="text-xs mb-0 text-capitalize font-weight-bold">Até 30 Dias</p>
+                            <h4 class="font-weight-bolder mb-0 text-primary">
+                                {{ stats.pallets_vencendo_30_dias }}
+                            </h4>
+                            <p class="text-xs text-secondary mb-0">pallets</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-2 col-sm-6 mb-xl-0 mb-4">
+        <div class="card">
+            <div class="card-body p-3">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="numbers text-center">
+                            <p class="text-xs mb-0 text-capitalize font-weight-bold">Acima 30 Dias</p>
+                            <h4 class="font-weight-bolder mb-0 text-secondary">
+                                {{ stats.pallets_vencendo_acima_30_dias }}
+                            </h4>
+                            <p class="text-xs text-secondary mb-0">pallets</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-2 col-sm-6">
+        <div class="card">
+            <div class="card-body p-3">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="numbers text-center">
+                            <p class="text-xs mb-0 text-capitalize font-weight-bold">Total a Devolver</p>
+                            <h4 class="font-weight-bolder mb-0 text-success">
+                                {{ stats.total_pallets_devolver }}
+                            </h4>
+                            <p class="text-xs text-secondary mb-0">pallets</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- GRÁFICO: Top 10 Destinatários -->
+<div class="row mt-5 mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header pb-0">
+                <h6>Top 10 Destinatários com Mais Pallets para Devolução</h6>
+                <p class="text-sm mb-0">
+                    <i class="fas fa-chart-bar text-info"></i>
+                    <span class="font-weight-bold">{{ top_destinatarios|length }}</span> destinatários com pallets pendentes
+                </p>
+            </div>
+            <div class="card-body">
+                <div class="chart">
+                    <canvas id="chartTopDestinatarios" class="chart-canvas" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- NOVO: CALENDÁRIO ESTILO GOOGLE AGENDA -->
+<div class="row mt-5 mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header pb-0">
+                <div class="row">
+                    <div class="col-lg-6">
+                        <h6>Calendário de Devoluções</h6>
+                        <p class="text-sm mb-0">
+                            <i class="fas fa-calendar text-info"></i>
+                            Agendamentos e vencimentos
+                        </p>
+                    </div>
+                    <div class="col-lg-6 text-end">
+                        <!-- Controles de visualização -->
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-sm btn-outline-primary" id="btnView7Days">7 Dias</button>
+                            <button type="button" class="btn btn-sm btn-outline-primary active" id="btnView30Days">30 Dias</button>
+                        </div>
+                        <div class="btn-group ms-2" role="group">
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="btnPrevMonth">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="btnToday">Hoje</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" id="btnNextMonth">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="calendario" class="calendario-container"></div>
+                
+                <!-- Legenda -->
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-center">
+                            <div class="me-4">
+                                <span class="badge bg-success me-1">●</span>
+                                <span class="text-xs">Agendamento de Devolução</span>
+                            </div>
+                            <div>
+                                <span class="badge bg-danger me-1">●</span>
+                                <span class="text-xs">Vencimento sem Agendamento</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -214,17 +417,6 @@
                             <span class="font-weight-bold ms-1">{{ stats.logs_hoje }}</span> ações registradas hoje
                         </p>
                     </div>
-                    <div class="col-lg-6 col-5 my-auto text-end">
-                        <div class="dropdown float-lg-end pe-4">
-                            <a class="cursor-pointer" id="dropdownTable" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fa fa-ellipsis-v text-secondary"></i>
-                            </a>
-                            <ul class="dropdown-menu px-2 py-3 ms-sm-n4 ms-n5" aria-labelledby="dropdownTable">
-                                <li><a class="dropdown-item border-radius-md" href="javascript:;">Atualizar</a></li>
-                                <li><a class="dropdown-item border-radius-md" href="javascript:;">Exportar</a></li>
-                            </ul>
-                        </div>
-                    </div>
                 </div>
             </div>
             <div class="card-body px-0 pb-2">
@@ -243,30 +435,17 @@
                             <tr>
                                 <td>
                                     <div class="d-flex px-2 py-1">
-                                        <div>
-                                            {% if log.modulo == 'auth' %}
-                                                <i class="fas fa-sign-in-alt text-primary me-2"></i>
-                                            {% elif log.modulo == 'empresas' %}
-                                                <i class="fas fa-building text-info me-2"></i>
-                                            {% elif log.modulo == 'vale_pallet' %}
-                                                <i class="fas fa-pallet text-success me-2"></i>
-                                            {% elif log.modulo == 'motoristas' %}
-                                                <i class="fas fa-truck text-warning me-2"></i>
-                                            {% else %}
-                                                <i class="fas fa-cog text-secondary me-2"></i>
-                                            {% endif %}
-                                        </div>
                                         <div class="d-flex flex-column justify-content-center">
-                                            <h6 class="mb-0 text-sm">{{ log.modulo.title() }}</h6>
+                                            <h6 class="mb-0 text-sm">{{ log.modulo }}</h6>
                                         </div>
                                     </div>
                                 </td>
                                 <td>
-                                    <p class="text-xs font-weight-bold mb-0">{{ log.acao.replace('_', ' ').title() }}</p>
+                                    <p class="text-xs font-weight-bold mb-0">{{ log.acao }}</p>
                                     <p class="text-xs text-secondary mb-0">{{ log.descricao[:50] }}...</p>
                                 </td>
-                                <td class="align-middle text-center text-sm">
-                                    <span class="badge badge-sm bg-gradient-secondary">{{ log.usuario_nome or 'Sistema' }}</span>
+                                <td class="align-middle text-center">
+                                    <span class="text-xs font-weight-bold">{{ log.usuario_nome }}</span>
                                 </td>
                                 <td class="align-middle text-center">
                                     <span class="text-secondary text-xs font-weight-bold">{{ log.data_hora.strftime('%d/%m/%Y %H:%M') }}</span>
@@ -280,4 +459,280 @@
         </div>
     </div>
 </div>
+
+<!-- CSS do Calendário -->
+<style>
+.calendario-container {
+    min-height: 400px;
+}
+
+.calendario-dia {
+    border: 1px solid #e9ecef;
+    padding: 10px;
+    min-height: 100px;
+    background: #fff;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.calendario-dia-header {
+    font-weight: bold;
+    font-size: 14px;
+    margin-bottom: 8px;
+    color: #344767;
+}
+
+.calendario-evento {
+    padding: 6px 10px;
+    border-radius: 6px;
+    margin-bottom: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.calendario-evento:hover {
+    transform: translateX(3px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.evento-agendamento {
+    background: #d4edda;
+    border-left: 4px solid #28a745;
+    color: #155724;
+}
+
+.evento-vencimento {
+    background: #f8d7da;
+    border-left: 4px solid #dc3545;
+    color: #721c24;
+}
+
+.evento-titulo {
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.evento-detalhes {
+    font-size: 11px;
+    opacity: 0.8;
+}
+</style>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+<script>
+// Dados do backend
+var agendamentos = {{ agendamentos|tojson }};
+var vencimentos = {{ vencimentos_sem_agendamento|tojson }};
+
+// Variáveis globais do calendário
+var currentView = 30; // 7 ou 30 dias
+var currentDate = new Date();
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Gráfico Top Destinatários
+    var ctx = document.getElementById('chartTopDestinatarios').getContext('2d');
+    
+    var labels = [
+        {% for dest in top_destinatarios %}
+        '{{ dest.razao_social }}'{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ];
+    
+    var data = [
+        {% for dest in top_destinatarios %}
+        {{ dest.saldo }}{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ];
+    
+    var colors = [
+        'rgba(255, 99, 132, 0.8)',
+        'rgba(54, 162, 235, 0.8)',
+        'rgba(255, 206, 86, 0.8)',
+        'rgba(75, 192, 192, 0.8)',
+        'rgba(153, 102, 255, 0.8)',
+        'rgba(255, 159, 64, 0.8)',
+        'rgba(199, 199, 199, 0.8)',
+        'rgba(83, 102, 255, 0.8)',
+        'rgba(255, 99, 255, 0.8)',
+        'rgba(99, 255, 132, 0.8)'
+    ];
+    
+    var chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Pallets a Devolver',
+                data: data,
+                backgroundColor: colors,
+                borderColor: colors.map(c => c.replace('0.8', '1')),
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 10
+                    }
+                },
+                x: {
+                    ticks: {
+                        maxRotation: 45,
+                        minRotation: 45
+                    }
+                }
+            }
+        }
+    });
+    
+    // Calendário
+    renderCalendario();
+    
+    // Eventos dos botões
+    document.getElementById('btnView7Days').addEventListener('click', function() {
+        currentView = 7;
+        document.getElementById('btnView7Days').classList.add('active');
+        document.getElementById('btnView30Days').classList.remove('active');
+        renderCalendario();
+    });
+    
+    document.getElementById('btnView30Days').addEventListener('click', function() {
+        currentView = 30;
+        document.getElementById('btnView30Days').classList.add('active');
+        document.getElementById('btnView7Days').classList.remove('active');
+        renderCalendario();
+    });
+    
+    document.getElementById('btnPrevMonth').addEventListener('click', function() {
+        currentDate.setMonth(currentDate.getMonth() - 1);
+        renderCalendario();
+    });
+    
+    document.getElementById('btnToday').addEventListener('click', function() {
+        currentDate = new Date();
+        renderCalendario();
+    });
+    
+    document.getElementById('btnNextMonth').addEventListener('click', function() {
+        currentDate.setMonth(currentDate.getMonth() + 1);
+        renderCalendario();
+    });
+});
+
+function renderCalendario() {
+    var container = document.getElementById('calendario');
+    container.innerHTML = '';
+    
+    var hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    
+    var dataInicio = new Date(currentDate);
+    dataInicio.setHours(0, 0, 0, 0);
+    
+    // Criar grid de dias
+    for (var i = 0; i < currentView; i++) {
+        var data = new Date(dataInicio);
+        data.setDate(data.getDate() + i);
+        
+        var diaDiv = document.createElement('div');
+        diaDiv.className = 'calendario-dia';
+        
+        // Header do dia
+        var header = document.createElement('div');
+        header.className = 'calendario-dia-header';
+        var diaSemana = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'][data.getDay()];
+        var dataStr = data.getDate() + '/' + (data.getMonth() + 1);
+        header.textContent = diaSemana + ' ' + dataStr;
+        diaDiv.appendChild(header);
+        
+        // Buscar eventos deste dia
+        var dataKey = formatDate(data);
+        
+        // Agendamentos
+        agendamentos.forEach(function(ag) {
+            if (ag.data_agendamento === dataKey) {
+                var evento = criarEventoAgendamento(ag);
+                diaDiv.appendChild(evento);
+            }
+        });
+        
+        // Vencimentos
+        vencimentos.forEach(function(venc) {
+            if (venc.data_vencimento === dataKey) {
+                var evento = criarEventoVencimento(venc);
+                diaDiv.appendChild(evento);
+            }
+        });
+        
+        container.appendChild(diaDiv);
+    }
+}
+
+function criarEventoAgendamento(ag) {
+    var div = document.createElement('div');
+    div.className = 'calendario-evento evento-agendamento';
+    
+    var titulo = document.createElement('div');
+    titulo.className = 'evento-titulo';
+    titulo.textContent = '📦 ' + ag.destinatario_nome;
+    div.appendChild(titulo);
+    
+    var detalhes = document.createElement('div');
+    detalhes.className = 'evento-detalhes';
+    detalhes.textContent = ag.quantidade_pallets + ' pallets agendados';
+    div.appendChild(detalhes);
+    
+    div.addEventListener('click', function() {
+        alert('Agendamento #' + ag.id + '\\n' +
+              'Destinatário: ' + ag.destinatario_nome + '\\n' +
+              'Quantidade: ' + ag.quantidade_pallets + ' pallets\\n' +
+              'Status: ' + ag.status);
+    });
+    
+    return div;
+}
+
+function criarEventoVencimento(venc) {
+    var div = document.createElement('div');
+    div.className = 'calendario-evento evento-vencimento';
+    
+    var titulo = document.createElement('div');
+    titulo.className = 'evento-titulo';
+    titulo.textContent = '⚠️ ' + venc.destinatario_nome;
+    div.appendChild(titulo);
+    
+    var saldo = venc.quantidade_pallets - venc.quantidade_devolvida;
+    var detalhes = document.createElement('div');
+    detalhes.className = 'evento-detalhes';
+    detalhes.textContent = saldo + ' pallets vencendo';
+    div.appendChild(detalhes);
+    
+    div.addEventListener('click', function() {
+        alert('Vencimento sem Agendamento\\n' +
+              'Destinatário: ' + venc.destinatario_nome + '\\n' +
+              'Pallets a devolver: ' + saldo + '\\n' +
+              'Total no destinatário: ' + venc.quantidade_pallets);
+    });
+    
+    return div;
+}
+
+function formatDate(date) {
+    var year = date.getFullYear();
+    var month = String(date.getMonth() + 1).padStart(2, '0');
+    var day = String(date.getDate()).padStart(2, '0');
+    return year + '-' + month + '-' + day;
+}
+</script>
 {% endblock %}

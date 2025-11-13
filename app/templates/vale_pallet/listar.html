@@ -18,6 +18,51 @@
                         </a>
                     </div>
                 </div>
+                
+                <!-- FILTROS -->
+                <div class="card-body">
+                    <form method="GET" action="{{ url_for('vale_pallet.listar') }}" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="status" class="form-label text-xs">Status</label>
+                            <select class="form-select form-select-sm" id="status" name="status">
+                                <option value="">Todos os status</option>
+                                {% for valor, nome in status_opcoes %}
+                                <option value="{{ valor }}" {% if status_filtro == valor %}selected{% endif %}>{{ nome }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <label for="destinatario" class="form-label text-xs">Destinatário</label>
+                            <select class="form-select form-select-sm" id="destinatario" name="destinatario">
+                                <option value="">Todos os destinatários</option>
+                                {% for dest in destinatarios %}
+                                <option value="{{ dest.id }}" {% if destinatario_filtro == dest.id %}selected{% endif %}>{{ dest.razao_social }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-2">
+                            <label for="data_vencimento_inicio" class="form-label text-xs">Vencimento (Início)</label>
+                            <input type="date" class="form-control form-control-sm" id="data_vencimento_inicio" name="data_vencimento_inicio" value="{{ data_vencimento_inicio }}">
+                        </div>
+                        
+                        <div class="col-md-2">
+                            <label for="data_vencimento_fim" class="form-label text-xs">Vencimento (Fim)</label>
+                            <input type="date" class="form-control form-control-sm" id="data_vencimento_fim" name="data_vencimento_fim" value="{{ data_vencimento_fim }}">
+                        </div>
+                        
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary btn-sm me-2">
+                                <i class="fas fa-filter"></i> Filtrar
+                            </button>
+                            <a href="{{ url_for('vale_pallet.listar') }}" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-times"></i> Limpar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+                
                 <div class="card-body px-0 pt-0 pb-2">
                     <div class="table-responsive p-0">
                         <table class="table align-items-center mb-0">
@@ -26,10 +71,11 @@
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">PIN</th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Documento</th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Cliente</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Destinatário</th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Transportadora</th>
                                     <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Pallets</th>
+                                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Vencimento</th>
                                     <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Status</th>
-                                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Data</th>
                                     <th class="text-secondary opacity-7"></th>
                                 </tr>
                             </thead>
@@ -50,16 +96,19 @@
                                         <p class="text-xs text-secondary mb-0">{{ vale.cliente.razao_social }}</p>
                                     </td>
                                     <td>
+                                        <p class="text-xs text-secondary mb-0">{{ vale.destinatario.razao_social }}</p>
+                                    </td>
+                                    <td>
                                         <p class="text-xs text-secondary mb-0">{{ vale.transportadora.razao_social }}</p>
                                     </td>
                                     <td class="align-middle text-center">
                                         <span class="text-secondary text-sm font-weight-bold">{{ vale.quantidade_pallets }}</span>
                                     </td>
+                                    <td class="align-middle text-center">
+                                        <span class="text-secondary text-xs font-weight-bold">{{ vale.data_vencimento.strftime('%d/%m/%Y') }}</span>
+                                    </td>
                                     <td class="align-middle text-center text-sm">
                                         <span class="text-secondary text-sm font-weight-bold">{{ vale.get_status_display() }}</span>
-                                    </td>
-                                    <td class="align-middle text-center">
-                                        <span class="text-secondary text-xs font-weight-bold">{{ vale.data_criacao.strftime('%d/%m/%Y') }}</span>
                                     </td>
                                     <td class="align-middle">
                                         <a href="{{ url_for('vale_pallet.visualizar', id=vale.id) }}" class="text-secondary font-weight-bold text-xs" title="Ver detalhes">
@@ -75,8 +124,8 @@
                                 </tr>
                                 {% else %}
                                 <tr>
-                                    <td colspan="8" class="text-center py-4">
-                                        <p class="text-secondary mb-0">Nenhum vale pallet cadastrado.</p>
+                                    <td colspan="9" class="text-center py-4">
+                                        <p class="text-secondary mb-0">Nenhum vale pallet encontrado.</p>
                                         <a href="{{ url_for('vale_pallet.novo') }}" class="btn btn-primary btn-sm mt-3">
                                             <i class="fas fa-plus"></i> Criar Primeiro Vale Pallet
                                         </a>
@@ -94,17 +143,17 @@
                             <ul class="pagination justify-content-center">
                                 <!-- Botão Anterior -->
                                 <li class="page-item {% if not vales.has_prev %}disabled{% endif %}">
-                                    <a class="page-link" href="{% if vales.has_prev %}{{ url_for('vale_pallet.listar', page=vales.prev_num) }}{% else %}#{% endif %}">
+                                    <a class="page-link" href="{% if vales.has_prev %}{{ url_for('vale_pallet.listar', page=vales.prev_num, status=status_filtro, destinatario=destinatario_filtro, data_vencimento_inicio=data_vencimento_inicio, data_vencimento_fim=data_vencimento_fim) }}{% else %}#{% endif %}">
                                         <i class="fas fa-angle-left"></i>
                                         <span class="sr-only">Anterior</span>
                                     </a>
                                 </li>
                                 
-                                <!-- Números das páginas -->
-                                {% for page_num in vales.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
-                                    {% if page_num %}
-                                        <li class="page-item {% if page_num == vales.page %}active{% endif %}">
-                                            <a class="page-link" href="{{ url_for('vale_pallet.listar', page=page_num) }}">{{ page_num }}</a>
+                                <!-- Páginas -->
+                                {% for num in vales.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+                                    {% if num %}
+                                        <li class="page-item {% if num == vales.page %}active{% endif %}">
+                                            <a class="page-link" href="{{ url_for('vale_pallet.listar', page=num, status=status_filtro, destinatario=destinatario_filtro, data_vencimento_inicio=data_vencimento_inicio, data_vencimento_fim=data_vencimento_fim) }}">{{ num }}</a>
                                         </li>
                                     {% else %}
                                         <li class="page-item disabled">
@@ -115,19 +164,20 @@
                                 
                                 <!-- Botão Próximo -->
                                 <li class="page-item {% if not vales.has_next %}disabled{% endif %}">
-                                    <a class="page-link" href="{% if vales.has_next %}{{ url_for('vale_pallet.listar', page=vales.next_num) }}{% else %}#{% endif %}">
+                                    <a class="page-link" href="{% if vales.has_next %}{{ url_for('vale_pallet.listar', page=vales.next_num, status=status_filtro, destinatario=destinatario_filtro, data_vencimento_inicio=data_vencimento_inicio, data_vencimento_fim=data_vencimento_fim) }}{% else %}#{% endif %}">
                                         <i class="fas fa-angle-right"></i>
                                         <span class="sr-only">Próximo</span>
                                     </a>
                                 </li>
                             </ul>
                         </nav>
-                        <p class="text-center text-sm text-secondary mb-0">
-                            Mostrando {{ vales.items|length }} de {{ vales.total }} vales (Página {{ vales.page }} de {{ vales.pages }})
-                        </p>
+                        
+                        <!-- Informações de Paginação -->
+                        <div class="text-center text-sm text-secondary mb-3">
+                            Mostrando {{ (vales.page - 1) * vales.per_page + 1 }} a {{ [vales.page * vales.per_page, vales.total]|min }} de {{ vales.total }} vales
+                        </div>
                     </div>
                     {% endif %}
-                    
                 </div>
             </div>
         </div>

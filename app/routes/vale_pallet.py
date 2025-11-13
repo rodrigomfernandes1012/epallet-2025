@@ -14,23 +14,82 @@ bp = Blueprint('vale_pallet', __name__, url_prefix='/vale-pallet')
 @bp.route('/')
 @login_required
 def listar():
-    """Lista todos os vales pallet que o usuário pode ver"""
+    """Lista todos os vales pallet que o usuário pode ver (com filtros)"""
+    from datetime import datetime
+    
     page = request.args.get('page', 1, type=int)
     per_page = 15  # 15 vales por página
+    
+    # Filtros
+    status_filtro = request.args.get('status', '')
+    destinatario_filtro = request.args.get('destinatario', '', type=int)
+    data_vencimento_inicio = request.args.get('data_vencimento_inicio', '')
+    data_vencimento_fim = request.args.get('data_vencimento_fim', '')
     
     # Vales das empresas que o usuário pode ver
     empresas_visiveis = current_user.empresas_visiveis()
     empresas_ids = [e.id for e in empresas_visiveis]
     
-    vales = ValePallet.query.filter(
+    # Query base
+    query = ValePallet.query.filter(
         (ValePallet.cliente_id.in_(empresas_ids)) |
         (ValePallet.transportadora_id.in_(empresas_ids)) |
         (ValePallet.destinatario_id.in_(empresas_ids))
-    ).order_by(ValePallet.data_criacao.desc()).paginate(
+    )
+    
+    # Aplicar filtro de status
+    if status_filtro:
+        query = query.filter(ValePallet.status == status_filtro)
+    
+    # Aplicar filtro de destinatário
+    if destinatario_filtro:
+        query = query.filter(ValePallet.destinatario_id == destinatario_filtro)
+    
+    # Aplicar filtro de data de vencimento (início)
+    if data_vencimento_inicio:
+        try:
+            data_inicio = datetime.strptime(data_vencimento_inicio, '%Y-%m-%d').date()
+            query = query.filter(ValePallet.data_vencimento >= data_inicio)
+        except ValueError:
+            pass
+    
+    # Aplicar filtro de data de vencimento (fim)
+    if data_vencimento_fim:
+        try:
+            data_fim = datetime.strptime(data_vencimento_fim, '%Y-%m-%d').date()
+            query = query.filter(ValePallet.data_vencimento <= data_fim)
+        except ValueError:
+            pass
+    
+    # Ordenar e paginar
+    vales = query.order_by(ValePallet.data_criacao.desc()).paginate(
         page=page, per_page=per_page, error_out=False
     )
     
-    return render_template('vale_pallet/listar.html', vales=vales)
+    # Buscar destinatários para o filtro
+    tipo_destinatario = TipoEmpresa.query.filter_by(nome='Destinatário').first()
+    destinatarios = []
+    if tipo_destinatario:
+        destinatarios = [e for e in empresas_visiveis if e.tipo_empresa_id == tipo_destinatario.id]
+    else:
+        destinatarios = empresas_visiveis
+    
+    # Status disponíveis
+    status_opcoes = [
+        ('pendente_entrega', 'Pendente de Entrega'),
+        ('entrega_realizada', 'Entrega Realizada'),
+        ('entrega_concluida', 'Entrega Concluída'),
+        ('cancelado', 'Cancelado')
+    ]
+    
+    return render_template('vale_pallet/listar.html',
+                          vales=vales,
+                          destinatarios=destinatarios,
+                          status_opcoes=status_opcoes,
+                          status_filtro=status_filtro,
+                          destinatario_filtro=destinatario_filtro,
+                          data_vencimento_inicio=data_vencimento_inicio,
+                          data_vencimento_fim=data_vencimento_fim)
 
 
 @bp.route('/novo', methods=['GET', 'POST'])
