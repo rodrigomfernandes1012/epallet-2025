@@ -64,6 +64,41 @@ def registrar_log(modulo, acao, descricao_template=None, operacao_sql=None, tabe
     return decorator
 
 
+def get_real_ip():
+    """
+    Obtém o IP público real do cliente (da internet)
+    Verifica headers de proxy/load balancer para obter o IP correto
+    
+    Returns:
+        str: IP público do cliente
+    """
+    if not request:
+        return 'unknown'
+    
+    # Verificar headers de proxy (em ordem de prioridade)
+    # X-Forwarded-For: Nginx, Apache, AWS ELB, etc
+    if request.headers.get('X-Forwarded-For'):
+        # Pode conter múltiplos IPs: "cliente, proxy1, proxy2"
+        # O primeiro é o IP real do cliente
+        ip = request.headers.get('X-Forwarded-For').split(',')[0].strip()
+        return ip
+    
+    # X-Real-IP: Nginx
+    if request.headers.get('X-Real-IP'):
+        return request.headers.get('X-Real-IP')
+    
+    # CF-Connecting-IP: Cloudflare
+    if request.headers.get('CF-Connecting-IP'):
+        return request.headers.get('CF-Connecting-IP')
+    
+    # True-Client-IP: Akamai, Cloudflare
+    if request.headers.get('True-Client-IP'):
+        return request.headers.get('True-Client-IP')
+    
+    # Fallback para remote_addr (IP interno se não houver proxy)
+    return request.remote_addr
+
+
 def log_acao(modulo, acao, descricao, registro_id=None, dados_anteriores=None, 
              dados_novos=None, operacao_sql=None, tabela_afetada=None, sucesso=True, mensagem_erro=None):
     """
@@ -72,7 +107,7 @@ def log_acao(modulo, acao, descricao, registro_id=None, dados_anteriores=None,
     Args:
         modulo: Nome do módulo
         acao: Tipo de ação
-        descricao: Descrição da ação
+        descrição: Descrição da ação
         registro_id: ID do registro afetado
         dados_anteriores: Dados antes da alteração
         dados_novos: Dados novos
@@ -84,7 +119,7 @@ def log_acao(modulo, acao, descricao, registro_id=None, dados_anteriores=None,
     try:
         usuario_id = current_user.id if current_user.is_authenticated else None
         usuario_nome = current_user.username if current_user.is_authenticated else 'Público'
-        ip_origem = request.remote_addr if request else 'unknown'
+        ip_origem = get_real_ip()  # Obter IP público real
         user_agent = request.headers.get('User-Agent') if request else None
         
         LogAuditoria.registrar(
