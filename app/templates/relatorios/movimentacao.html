@@ -23,7 +23,10 @@
                         </p>
                     </div>
                     <div class="col-6 text-end">
-                        <button class="btn btn-sm btn-success" onclick="window.print()">
+                        <a href="{{ url_for('relatorios.exportar_movimentacao_excel', tipo_relatorio=filtro_tipo_relatorio, tipo_empresa=filtro_tipo, empresa=filtro_empresa, motorista=filtro_motorista, documento=filtro_documento, status=filtro_status) }}" class="btn btn-sm btn-success me-2" title="Exportar para Excel">
+                            <i class="fas fa-file-excel me-2"></i>Exportar Excel
+                        </a>
+                        <button class="btn btn-sm btn-info" onclick="window.print()">
                             <i class="fas fa-print me-2"></i>Imprimir
                         </button>
                     </div>

@@ -349,3 +349,123 @@ def buscar_pin():
             flash(f'Vale Pallet com PIN "{pin}" não encontrado!', 'warning')
     
     return render_template('vale_pallet/buscar_pin.html')
+
+
+@bp.route('/exportar-excel')
+@login_required
+def exportar_excel():
+    """Exporta lista de vales para Excel (respeitando filtros)"""
+    from datetime import datetime
+    from io import BytesIO
+    from flask import send_file
+    import openpyxl
+    from openpyxl.styles import Font, PatternFill, Alignment
+    
+    # Filtros (mesmos da listagem)
+    status_filtro = request.args.get('status', '')
+    destinatario_filtro = request.args.get('destinatario', '', type=int)
+    data_vencimento_inicio = request.args.get('data_vencimento_inicio', '')
+    data_vencimento_fim = request.args.get('data_vencimento_fim', '')
+    
+    # Vales das empresas que o usuário pode ver
+    empresas_visiveis = current_user.empresas_visiveis()
+    empresas_ids = [e.id for e in empresas_visiveis]
+    
+    # Query base (SEM paginação - todos os registros)
+    query = ValePallet.query.filter(
+        (ValePallet.cliente_id.in_(empresas_ids)) |
+        (ValePallet.transportadora_id.in_(empresas_ids)) |
+        (ValePallet.destinatario_id.in_(empresas_ids))
+    )
+    
+    # Aplicar filtros
+    if status_filtro:
+        query = query.filter(ValePallet.status == status_filtro)
+    
+    if destinatario_filtro:
+        query = query.filter(ValePallet.destinatario_id == destinatario_filtro)
+    
+    if data_vencimento_inicio:
+        try:
+            data_inicio = datetime.strptime(data_vencimento_inicio, '%Y-%m-%d').date()
+            query = query.filter(ValePallet.data_vencimento >= data_inicio)
+        except ValueError:
+            pass
+    
+    if data_vencimento_fim:
+        try:
+            data_fim = datetime.strptime(data_vencimento_fim, '%Y-%m-%d').date()
+            query = query.filter(ValePallet.data_vencimento <= data_fim)
+        except ValueError:
+            pass
+    
+    # Buscar TODOS os vales (sem paginação)
+    vales = query.order_by(ValePallet.data_criacao.desc()).all()
+    
+    # Criar workbook
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Vales Pallet"
+    
+    # Estilo do cabeçalho
+    header_fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
+    header_font = Font(bold=True, color="FFFFFF")
+    header_alignment = Alignment(horizontal="center", vertical="center")
+    
+    # Cabeçalhos
+    headers = [
+        "PIN", "Documento", "Cliente", "Destinatário", "Transportadora",
+        "Motorista", "Placa", "Quantidade Pallets", "Quantidade Devolvida",
+        "Saldo", "Data Vencimento", "Data Criação", "Status"
+    ]
+    
+    for col_num, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col_num)
+        cell.value = header
+        cell.fill = header_fill
+        cell.font = header_font
+        cell.alignment = header_alignment
+    
+    # Dados
+    for row_num, vale in enumerate(vales, 2):
+        ws.cell(row=row_num, column=1, value=vale.pin)
+        ws.cell(row=row_num, column=2, value=vale.numero_documento)
+        ws.cell(row=row_num, column=3, value=vale.cliente.razao_social if vale.cliente else "")
+        ws.cell(row=row_num, column=4, value=vale.destinatario.razao_social if vale.destinatario else "")
+        ws.cell(row=row_num, column=5, value=vale.transportadora.razao_social if vale.transportadora else "")
+        ws.cell(row=row_num, column=6, value=vale.motorista.nome if vale.motorista else "")
+        ws.cell(row=row_num, column=7, value=vale.motorista.placa_caminhao if vale.motorista else "")
+        ws.cell(row=row_num, column=8, value=vale.quantidade_pallets)
+        ws.cell(row=row_num, column=9, value=vale.quantidade_devolvida)
+        ws.cell(row=row_num, column=10, value=vale.quantidade_pallets - vale.quantidade_devolvida)
+        ws.cell(row=row_num, column=11, value=vale.data_vencimento.strftime('%d/%m/%Y') if vale.data_vencimento else "")
+        ws.cell(row=row_num, column=12, value=vale.data_criacao.strftime('%d/%m/%Y %H:%M') if vale.data_criacao else "")
+        ws.cell(row=row_num, column=13, value=vale.get_status_display())
+    
+    # Ajustar largura das colunas
+    for col in ws.columns:
+        max_length = 0
+        column = col[0].column_letter
+        for cell in col:
+            try:
+                if len(str(cell.value)) > max_length:
+                    max_length = len(str(cell.value))
+            except:
+                pass
+        adjusted_width = min(max_length + 2, 50)
+        ws.column_dimensions[column].width = adjusted_width
+    
+    # Salvar em BytesIO
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    
+    # Nome do arquivo com data/hora
+    nome_arquivo = f"vales_pallet_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+    
+    return send_file(
+        output,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        as_attachment=True,
+        download_name=nome_arquivo
+    )

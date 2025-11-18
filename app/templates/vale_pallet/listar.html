@@ -10,6 +10,9 @@
                 <div class="card-header pb-0 d-flex justify-content-between align-items-center">
                     <h6>Lista de Vales Pallet</h6>
                     <div>
+                        <a href="{{ url_for('vale_pallet.exportar_excel', status=status_filtro, destinatario=destinatario_filtro, data_vencimento_inicio=data_vencimento_inicio, data_vencimento_fim=data_vencimento_fim) }}" class="btn btn-success btn-sm me-2" title="Exportar para Excel">
+                            <i class="fas fa-file-excel"></i> Exportar Excel
+                        </a>
                         <a href="{{ url_for('vale_pallet.buscar_pin') }}" class="btn btn-info btn-sm me-2">
                             <i class="fas fa-search"></i> Buscar por PIN
                         </a>

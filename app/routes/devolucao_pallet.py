@@ -73,6 +73,10 @@ def listar():
         descricao='Listou devoluções de pallets'
     )
     
+    # Filtros de data (se houver)
+    data_inicio_filtro = request.args.get('data_inicio', '')
+    data_fim_filtro = request.args.get('data_fim', '')
+    
     return render_template(
         'devolucao_pallet/listar.html',
         devolucoes=devolucoes,
@@ -80,7 +84,9 @@ def listar():
         destinatarios=destinatarios,
         status_filtro=status_filtro,
         cliente_filtro=cliente_filtro,
-        destinatario_filtro=destinatario_filtro
+        destinatario_filtro=destinatario_filtro,
+        data_inicio_filtro=data_inicio_filtro,
+        data_fim_filtro=data_fim_filtro
     )
 
 
@@ -443,3 +449,125 @@ def api_saldo(cliente_id, destinatario_id):
         return jsonify({'sucesso': True, 'saldo': saldo})
     except Exception as e:
         return jsonify({'sucesso': False, 'mensagem': str(e)}), 400
+
+
+@devolucao_pallet_bp.route('/exportar-excel')
+@login_required
+@permissao_required('devolucao_pallet', 'visualizar')
+def exportar_excel():
+    """Exporta lista de devoluções para Excel (respeitando filtros)"""
+    from io import BytesIO
+    from flask import send_file
+    import openpyxl
+    from openpyxl.styles import Font, PatternFill, Alignment
+    
+    # Filtros (mesmos da listagem)
+    status_filtro = request.args.get('status', '')
+    cliente_filtro = request.args.get('cliente', '', type=int)
+    destinatario_filtro = request.args.get('destinatario', '', type=int)
+    data_inicio_filtro = request.args.get('data_inicio', '')
+    data_fim_filtro = request.args.get('data_fim', '')
+    
+    # Query base (SEM paginação - todos os registros)
+    query = DevolucaoPallet.query
+    
+    # Aplicar filtros
+    if status_filtro:
+        query = query.filter_by(status=status_filtro)
+    
+    if cliente_filtro:
+        query = query.filter_by(cliente_id=cliente_filtro)
+    
+    if destinatario_filtro:
+        query = query.filter_by(destinatario_id=destinatario_filtro)
+    
+    if data_inicio_filtro:
+        try:
+            data_inicio = datetime.strptime(data_inicio_filtro, '%Y-%m-%d').date()
+            query = query.filter(DevolucaoPallet.data_agendamento >= data_inicio)
+        except ValueError:
+            pass
+    
+    if data_fim_filtro:
+        try:
+            data_fim = datetime.strptime(data_fim_filtro, '%Y-%m-%d').date()
+            query = query.filter(DevolucaoPallet.data_agendamento <= data_fim)
+        except ValueError:
+            pass
+    
+    # Buscar TODAS as devoluções (sem paginação)
+    devolucoes = query.order_by(DevolucaoPallet.criado_em.desc()).all()
+    
+    # Criar workbook
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Devoluções de Pallets"
+    
+    # Estilo do cabeçalho
+    header_fill = PatternFill(start_color="366092", end_color="366092", fill_type="solid")
+    header_font = Font(bold=True, color="FFFFFF")
+    header_alignment = Alignment(horizontal="center", vertical="center")
+    
+    # Cabeçalhos
+    headers = [
+        "PIN", "Cliente", "Destinatário", "Transportadora", "Motorista",
+        "Placa", "Quantidade Pallets", "Data Agendamento", "Data Coleta",
+        "Status", "Observações", "Data Criação"
+    ]
+    
+    for col_num, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col_num)
+        cell.value = header
+        cell.fill = header_fill
+        cell.font = header_font
+        cell.alignment = header_alignment
+    
+    # Dados
+    for row_num, dev in enumerate(devolucoes, 2):
+        ws.cell(row=row_num, column=1, value=dev.pin_devolucao)
+        ws.cell(row=row_num, column=2, value=dev.cliente.razao_social if dev.cliente else "")
+        ws.cell(row=row_num, column=3, value=dev.destinatario.razao_social if dev.destinatario else "")
+        ws.cell(row=row_num, column=4, value=dev.transportadora.razao_social if dev.transportadora else "")
+        ws.cell(row=row_num, column=5, value=dev.motorista.nome if dev.motorista else "")
+        ws.cell(row=row_num, column=6, value=dev.motorista.placa_caminhao if dev.motorista else "")
+        ws.cell(row=row_num, column=7, value=dev.quantidade_pallets)
+        ws.cell(row=row_num, column=8, value=dev.data_agendamento.strftime('%d/%m/%Y') if dev.data_agendamento else "")
+        ws.cell(row=row_num, column=9, value=dev.data_coleta.strftime('%d/%m/%Y %H:%M') if dev.data_coleta else "")
+        ws.cell(row=row_num, column=10, value=dev.get_status_display())
+        ws.cell(row=row_num, column=11, value=dev.observacoes or "")
+        ws.cell(row=row_num, column=12, value=dev.criado_em.strftime('%d/%m/%Y %H:%M') if dev.criado_em else "")
+    
+    # Ajustar largura das colunas
+    for col in ws.columns:
+        max_length = 0
+        column = col[0].column_letter
+        for cell in col:
+            try:
+                if len(str(cell.value)) > max_length:
+                    max_length = len(str(cell.value))
+            except:
+                pass
+        adjusted_width = min(max_length + 2, 50)
+        ws.column_dimensions[column].width = adjusted_width
+    
+    # Salvar em BytesIO
+    output = BytesIO()
+    wb.save(output)
+    output.seek(0)
+    
+    # Nome do arquivo com data/hora
+    nome_arquivo = f"devolucoes_pallets_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+    
+    # Registrar log
+    log_acao(
+        modulo='devolucao_pallet',
+        acao='exportar',
+        descricao=f'Exportou {len(devolucoes)} devoluções para Excel'
+    )
+    
+    return send_file(
+        output,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        as_attachment=True,
+        download_name=nome_arquivo
+    )

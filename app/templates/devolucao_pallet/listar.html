@@ -10,11 +10,16 @@
                 <div class="card-header pb-0">
                     <div class="d-flex justify-content-between align-items-center">
                         <h6>Devoluções de Pallets</h6>
-                        {% if current_user.tem_permissao('devolucao_pallet', 'criar') %}
-                        <a href="{{ url_for('devolucao_pallet.novo') }}" class="btn btn-primary btn-sm">
-                            <i class="fas fa-plus me-2"></i>Nova Devolução
-                        </a>
-                        {% endif %}
+                        <div>
+                            <a href="{{ url_for('devolucao_pallet.exportar_excel', status=status_filtro, destinatario=destinatario_filtro, data_inicio=data_inicio_filtro, data_fim=data_fim_filtro) }}" class="btn btn-success btn-sm me-2" title="Exportar para Excel">
+                                <i class="fas fa-file-excel me-2"></i>Exportar Excel
+                            </a>
+                            {% if current_user.tem_permissao('devolucao_pallet', 'criar') %}
+                            <a href="{{ url_for('devolucao_pallet.novo') }}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-plus me-2"></i>Nova Devolução
+                            </a>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
                 
@@ -103,10 +108,11 @@
                                 <td class="align-middle text-center">
                                     <span class="text-secondary text-xs font-weight-bold">{{ devolucao.quantidade_pallets }}</span>
                                 </td>
-                                 <td class="align-middle text-center text-sm">
-                                        <span class="text-secondary text-sm font-weight-bold">{{ devolucao.get_status_display() }}</span>
-                                    </td>
-
+                                <td class="align-middle text-center text-sm">
+                                    <span class="badge badge-sm {{ devolucao.get_status_badge_class() }}">
+                                        {{ devolucao.get_status_display() }}
+                                    </span>
+                                </td>
                                 <td class="align-middle text-center">
                                     <a href="{{ url_for('devolucao_pallet.visualizar', id=devolucao.id) }}" 
                                        class="btn btn-link text-secondary mb-0" 
