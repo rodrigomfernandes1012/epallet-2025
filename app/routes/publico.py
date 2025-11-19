@@ -179,3 +179,65 @@ def validacao_pin():
                          resultado=resultado,
                          mensagem=mensagem,
                          tipo_mensagem=tipo_mensagem)
+
+
+@publico_bp.route('/validar-vale/<int:vale_id>/<string:hash_validacao>')
+def validar_vale_qrcode(vale_id, hash_validacao):
+    """
+    Página pública para validação de vale via QR Code
+    Verifica autenticidade do documento impresso
+    """
+    from app.utils.qrcode_utils import validar_hash_vale
+    
+    # Buscar vale
+    vale = ValePallet.query.get(vale_id)
+    
+    if not vale:
+        return render_template(
+            'publico/validar_vale_qrcode.html',
+            valido=False,
+            mensagem='Vale não encontrado no sistema.',
+            vale=None
+        )
+    
+    # Validar hash
+    hash_valido = validar_hash_vale(
+        vale.id,
+        vale.numero_documento,
+        vale.pin,
+        vale.data_criacao,
+        hash_validacao
+    )
+    
+    if not hash_valido:
+        return render_template(
+            'publico/validar_vale_qrcode.html',
+            valido=False,
+            mensagem='Documento inválido! A assinatura digital não confere.',
+            vale=None
+        )
+    
+    # Verificar se está vencido
+    vencido = vale.data_vencimento < datetime.now().date()
+    
+    # Calcular saldo
+    saldo = vale.quantidade_pallets - vale.quantidade_devolvida
+    
+    # Registrar log de validação
+    log_acao(
+        modulo='vale_pallet',
+        acao='validar_qrcode',
+        descricao=f'Vale {vale.numero_documento} validado via QR Code',
+        registro_id=vale.id,
+        operacao_sql='SELECT',
+        tabela_afetada='vales_pallet'
+    )
+    
+    return render_template(
+        'publico/validar_vale_qrcode.html',
+        valido=True,
+        mensagem='Documento autêntico! Assinatura digital verificada.',
+        vale=vale,
+        vencido=vencido,
+        saldo=saldo
+    )

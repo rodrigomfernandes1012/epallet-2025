@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Validação de Vale Pallet - Sistema ePallet</title>
+    
+    <!-- Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Argon CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/argon-dashboard.min.css') }}">
+    
+    <style>
+        .info-row {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #6c757d;
+            font-size: 0.875rem;
+        }
+        
+        .info-value {
+            color: #212529;
+            font-size: 0.95rem;
+        }
+        
+        .validation-icon {
+            font-size: 4rem;
+        }
+        
+        .card-validation {
+            box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="">
+    <main class="main-content mt-0">
+        <section>
+            <div class="page-header min-vh-100">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-xl-8 col-lg-9 col-md-10 mx-auto">
+                            <div class="card card-validation mt-5 mb-5">
+                                
+                                {% if valido %}
+                                <!-- Documento Válido -->
+                                <div class="card-header pb-0 text-center bg-gradient-success">
+                                    <div class="validation-icon text-white my-4">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <h3 class="text-white mb-0">Documento Autêntico!</h3>
+                                    <p class="text-white opacity-8 mb-4">Assinatura digital verificada com sucesso</p>
+                                </div>
+                                
+                                <div class="card-body p-4">
+                                    
+                                    {% if vencido %}
+                                    <div class="alert alert-warning" role="alert">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+                                            <div>
+                                                <h5 class="alert-heading mb-1">VALE EXPIRADO!</h5>
+                                                <p class="mb-0">A data de vencimento deste vale já passou.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <!-- Informações do Vale -->
+                                    <h5 class="mb-3 mt-4">
+                                        <i class="fas fa-file-invoice me-2 text-primary"></i>
+                                        Informações do Vale Pallet
+                                    </h5>
+                                    
+                                    <div class="info-row">
+                                        <div class="row">
+                                            <div class="col-md-4 info-label">Número do Documento:</div>
+                                            <div class="col-md-8 info-value">
+                                                <strong>{{ vale.numero_documento }}</strong>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="info-row">
+                                        <div class="row">
+                                            <div class="col-md-4 info-label">PIN de Validação:</div>
+                                            <div class="col-md-8 info-value">
+                                                <span class="badge badge-lg bg-gradient-primary">{{ vale.pin }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="info-row">
+                                        <div class="row">
+                                            <div class="col-md-4 info-label">Status:</div>
+                                            <div class="col-md-8 info-value">
+                                                {% if vale.status == 'pendente_entrega' %}
+                                                    <span class="badge badge-sm bg-gradient-warning">Pendente de Entrega</span>
+                                                {% elif vale.status == 'entrega_realizada' %}
+                                                    <span class="badge badge-sm bg-gradient-info">Entrega Realizada</span>
+                                                {% elif vale.status == 'entrega_concluida' %}
+                                                    <span class="badge badge-sm bg-gradient-success">Entrega Concluída</span>
+                                                {% elif vale.status == 'cancelado' %}
+                                                    <span class="badge badge-sm bg-gradient-danger">Cancelado</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <h5 class="mb-3 mt-5">
+                                        <i class="fas fa-building me-2 text-info"></i>
+                                        Empresas Envolvidas
+                                    </h5>
+                                    
+                                    <div class="info-row">
+                                        <div class="row">
+                                            <div class="col-md-4 info-label">Cliente:</div>
+                                            <div class="col-md-8 info-value">{{ vale.cliente.razao_social if vale.cliente else '-' }}</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="info-row">
+                                        <div class="row">
+                                            <div class="col-md-4 info-label">Destinatário:</div>
+                                            <div class="col-md-8 info-value">{{ vale.destinatario.razao_social if vale.destinatario else '-' }}</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="info-row">
+                                        <div class="row">
+                                            <div class="col-md-4 info-label">Transportadora:</div>
+                                            <div class="col-md-8 info-value">{{ vale.transportadora.razao_social if vale.transportadora else '-' }}</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <h5 class="mb-3 mt-5">
+                                        <i class="fas fa-truck me-2 text-warning"></i>
+                                        Informações de Entrega
+                                    </h5>
+                                    
+                                    <div class="info-row">
+                                        <div class="row">
+                                            <div class="col-md-4 info-label">Motorista:</div>
+                                            <div class="col-md-8 info-value">{{ vale.motorista.nome if vale.motorista else 'Não informado' }}</div>
+                                        </div>
+                                    </div>
+                                    
+                                    {% if vale.motorista %}
+                                    <div class="info-row">
+                                        <div class="row">
+                                            <div class="col-md-4 info-label">Placa do Veículo:</div>
+                                            <div class="col-md-8 info-value">{{ vale.motorista.placa_caminhao if vale.motorista.placa_caminhao else '-' }}</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="info-row">
+                                        <div class="row">
+                                            <div class="col-md-4 info-label">Celular:</div>
+                                            <div class="col-md-8 info-value">{{ vale.motorista.celular if vale.motorista.celular else '-' }}</div>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <h5 class="mb-3 mt-5">
+                                        <i class="fas fa-pallet me-2 text-success"></i>
+                                        Quantidade de Pallets
+                                    </h5>
+                                    
+                                    <div class="info-row">
+                                        <div class="row">
+                                            <div class="col-md-4 info-label">Quantidade Total:</div>
+                                            <div class="col-md-8 info-value">
+                                                <strong class="text-primary">{{ vale.quantidade_pallets }}</strong> pallets
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="info-row">
+                                        <div class="row">
+                                            <div class="col-md-4 info-label">Quantidade Devolvida:</div>
+                                            <div class="col-md-8 info-value">
+                                                <strong class="text-info">{{ vale.quantidade_devolvida }}</strong> pallets
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="info-row">
+                                        <div class="row">
+                                            <div class="col-md-4 info-label">Saldo a Devolver:</div>
+                                            <div class="col-md-8 info-value">
+                                                <span class="badge badge-lg bg-gradient-{{ 'success' if saldo > 0 else 'secondary' }}">
+                                                    {{ saldo }} pallets
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <h5 class="mb-3 mt-5">
+                                        <i class="fas fa-calendar-alt me-2 text-danger"></i>
+                                        Datas
+                                    </h5>
+                                    
+                                    <div class="info-row">
+                                        <div class="row">
+                                            <div class="col-md-4 info-label">Data de Criação:</div>
+                                            <div class="col-md-8 info-value">{{ vale.data_criacao.strftime('%d/%m/%Y às %H:%M') }}</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="info-row">
+                                        <div class="row">
+                                            <div class="col-md-4 info-label">Data de Vencimento:</div>
+                                            <div class="col-md-8 info-value">
+                                                <span class="{% if vencido %}text-danger fw-bold{% else %}text-success{% endif %}">
+                                                    {{ vale.data_vencimento.strftime('%d/%m/%Y') }}
+                                                    {% if vencido %}
+                                                        <i class="fas fa-exclamation-circle ms-1"></i>
+                                                    {% else %}
+                                                        <i class="fas fa-check-circle ms-1"></i>
+                                                    {% endif %}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mt-5 p-3 bg-light rounded">
+                                        <div class="text-center">
+                                            <i class="fas fa-shield-alt text-success fa-2x mb-2"></i>
+                                            <p class="text-sm text-muted mb-0">
+                                                <strong>Documento verificado com assinatura digital criptográfica</strong><br>
+                                                Este vale pallet é autêntico e foi validado pelo sistema ePallet
+                                            </p>
+                                        </div>
+                                    </div>
+                                    
+                                </div>
+                                
+                                {% else %}
+                                <!-- Documento Inválido -->
+                                <div class="card-header pb-0 text-center bg-gradient-danger">
+                                    <div class="validation-icon text-white my-4">
+                                        <i class="fas fa-times-circle"></i>
+                                    </div>
+                                    <h3 class="text-white mb-0">Documento Inválido!</h3>
+                                    <p class="text-white opacity-8 mb-4">A assinatura digital não confere</p>
+                                </div>
+                                
+                                <div class="card-body p-4">
+                                    <div class="alert alert-danger" role="alert">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-exclamation-triangle fa-3x me-3"></i>
+                                            <div>
+                                                <h5 class="alert-heading mb-1">Atenção!</h5>
+                                                <p class="mb-0">{{ mensagem }}</p>
+                                                <p class="mb-0 mt-2"><strong>Este documento pode ser falso ou ter sido adulterado.</strong></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mt-4 p-3 bg-light rounded">
+                                        <p class="text-sm text-muted mb-0">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            Se você recebeu este documento de uma fonte confiável, entre em contato com o emissor para verificação.
+                                        </p>
+                                    </div>
+                                </div>
+                                {% endif %}
+                                
+                                <div class="card-footer text-center bg-light">
+                                    <p class="text-sm text-muted mb-0">
+                                        <i class="fas fa-copyright me-1"></i>
+                                        Sistema ePallet - Gestão Inteligente de Pallets
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+</body>
+</html>
