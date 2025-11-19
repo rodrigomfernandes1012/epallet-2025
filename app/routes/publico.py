@@ -184,60 +184,29 @@ def validacao_pin():
 @publico_bp.route('/validar-vale/<int:vale_id>/<string:hash_validacao>')
 def validar_vale_qrcode(vale_id, hash_validacao):
     """
-    Página pública para validação de vale via QR Code
-    Verifica autenticidade do documento impresso
+    Validação de vale via QR Code
+    URL simplificada: /publico/validar-vale/{id}/{hash}
     """
-    from app.utils.qrcode_utils import validar_hash_vale
+    import hashlib
     
     # Buscar vale
-    vale = ValePallet.query.get(vale_id)
+    vale = ValePallet.query.get_or_404(vale_id)
     
-    if not vale:
-        return render_template(
-            'publico/validar_vale_qrcode.html',
-            valido=False,
-            mensagem='Vale não encontrado no sistema.',
-            vale=None
-        )
+    # Gerar hash esperado (primeiros 16 caracteres do SHA256)
+    dados_assinatura = f"{vale.id}|{vale.numero_documento}|{vale.pin}|{vale.data_criacao.isoformat()}"
+    hash_completo = hashlib.sha256(dados_assinatura.encode()).hexdigest()
+    hash_esperado = hash_completo[:16]
     
-    # Validar hash
-    hash_valido = validar_hash_vale(
-        vale.id,
-        vale.numero_documento,
-        vale.pin,
-        vale.data_criacao,
-        hash_validacao
-    )
+    # Verificar se hash confere
+    if hash_validacao != hash_esperado:
+        flash('Assinatura digital inválida! Este documento pode ter sido adulterado.', 'danger')
+        return render_template('publico/validar_vale_qrcode.html',
+                             vale=None,
+                             valido=False,
+                             mensagem='Assinatura digital inválida')
     
-    if not hash_valido:
-        return render_template(
-            'publico/validar_vale_qrcode.html',
-            valido=False,
-            mensagem='Documento inválido! A assinatura digital não confere.',
-            vale=None
-        )
-    
-    # Verificar se está vencido
-    vencido = vale.data_vencimento < datetime.now().date()
-    
-    # Calcular saldo
-    saldo = vale.quantidade_pallets - vale.quantidade_devolvida
-    
-    # Registrar log de validação
-    log_acao(
-        modulo='vale_pallet',
-        acao='validar_qrcode',
-        descricao=f'Vale {vale.numero_documento} validado via QR Code',
-        registro_id=vale.id,
-        operacao_sql='SELECT',
-        tabela_afetada='vales_pallet'
-    )
-    
-    return render_template(
-        'publico/validar_vale_qrcode.html',
-        valido=True,
-        mensagem='Documento autêntico! Assinatura digital verificada.',
-        vale=vale,
-        vencido=vencido,
-        saldo=saldo
-    )
+    # Hash válido - exibir informações do vale
+    return render_template('publico/validar_vale_qrcode.html',
+                         vale=vale,
+                         valido=True,
+                         mensagem='Documento autêntico')
