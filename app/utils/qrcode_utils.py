@@ -5,7 +5,6 @@ import qrcode
 import hashlib
 from io import BytesIO
 import base64
-from flask import current_app
 
 
 def gerar_qrcode_vale(vale_id, numero_documento, pin, data_criacao):
@@ -21,16 +20,14 @@ def gerar_qrcode_vale(vale_id, numero_documento, pin, data_criacao):
     Returns:
         String base64 da imagem do QR Code
     """
-    # Gerar assinatura digital (hash SHA256)
-    # Combinar dados sensíveis para criar assinatura única
+    # Gerar hash simples (primeiros 16 caracteres do SHA256)
     dados_assinatura = f"{vale_id}|{numero_documento}|{pin}|{data_criacao.isoformat()}"
-    assinatura = hashlib.sha256(dados_assinatura.encode()).hexdigest()
+    hash_completo = hashlib.sha256(dados_assinatura.encode()).hexdigest()
+    hash_curto = hash_completo[:16]  # Usar apenas primeiros 16 caracteres
     
-    # URL de produção
+    # URL de produção simplificada
     base_url = "https://portal.epallet.com.br"
-    
-    # Construir URL de validação com parâmetros
-    url_validacao = f"{base_url}/publico/validar-vale?id={vale_id}&doc={numero_documento}&sig={assinatura}"
+    url_validacao = f"{base_url}/publico/validar-vale/{vale_id}/{hash_curto}"
     
     # Gerar QR Code
     qr = qrcode.QRCode(

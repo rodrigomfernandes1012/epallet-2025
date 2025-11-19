@@ -509,55 +509,54 @@ def imprimir_pdf(id):
     y = y_start
     
     # ==================== CABEÇALHO ====================
-    # Fundo do cabeçalho (verde para padronizar com página de validação)
-    p.setFillColor(colors.HexColor('#2dce89'))  # Verde similar ao bg-gradient-success
-    p.rect(0, y - 2.2*cm, width, 2.2*cm, fill=True, stroke=False)
+    # Logo do lado esquerdo
+    from reportlab.lib.utils import ImageReader
+    import os
+    logo_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'static', 'logo.png')
     
-    # Ícone de check (simulado com texto)
-    p.setFillColor(colors.white)
-    p.setFont("Helvetica-Bold", 24)
-    p.drawCentredString(width/2, y - 0.9*cm, "✓")
+    try:
+        logo = ImageReader(logo_path)
+        # Logo com 2cm de altura, proporcional
+        logo_height = 1.5*cm
+        logo_width = logo_height * 2  # Ajustar proporção conforme necessário
+        p.drawImage(logo, 1*cm, y - logo_height - 0.3*cm, width=logo_width, height=logo_height, preserveAspectRatio=True, mask='auto')
+    except:
+        # Se logo não existir, mostrar texto
+        p.setFont("Helvetica-Bold", 14)
+        p.setFillColor(colors.HexColor('#2dce89'))
+        p.drawString(1*cm, y - 1*cm, "ePALLET")
     
-    # Título
-    p.setFont("Helvetica-Bold", 16)
-    p.drawCentredString(width/2, y - 1.6*cm, "VALE PALLET")
-    
-    # Subtítulo
+    # Texto do lado direito
     p.setFont("Helvetica", 9)
-    p.drawCentredString(width/2, y - 2*cm, "Documento com assinatura digital")
+    p.setFillColor(colors.HexColor('#6c757d'))
+    p.drawRightString(width - 1*cm, y - 0.8*cm, "Documento com assinatura digital")
     
-    y -= 2.8*cm
+    # Linha separadora
+    p.setStrokeColor(colors.HexColor('#2dce89'))
+    p.setLineWidth(1.5)
+    p.line(1*cm, y - 2*cm, width - 1*cm, y - 2*cm)
+    
+    y -= 2.5*cm
     
     # ==================== INFORMAÇÕES DO VALE ====================
     p.setFillColor(colors.black)
     
     # Seção: Informações do Vale Pallet
-    p.setFont("Helvetica-Bold", 10)
-    p.setFillColor(colors.HexColor('#5e72e4'))
-    p.drawString(1.5*cm, y, "📄 Informações do Vale Pallet")
-    p.setFillColor(colors.black)
-    y -= 0.6*cm
-    
-    # Linha separadora
-    p.setStrokeColor(colors.HexColor('#e9ecef'))
-    p.setLineWidth(0.5)
-    p.line(1.5*cm, y, width - 1.5*cm, y)
-    y -= 0.5*cm
-    
-    # Número do Documento
-    p.setFont("Helvetica", 8)
-    p.setFillColor(colors.HexColor('#6c757d'))
-    p.drawString(1.5*cm, y, "Número do Documento:")
     p.setFont("Helvetica-Bold", 9)
+    p.setFillColor(colors.HexColor('#5e72e4'))
+    p.drawString(1*cm, y, "📄 Informações do Vale Pallet")
     p.setFillColor(colors.black)
-    p.drawString(5*cm, y, vale.numero_documento)
     y -= 0.5*cm
     
-    # Status
-    p.setFont("Helvetica", 8)
+    # Número do Documento e Status na mesma linha
+    p.setFont("Helvetica", 7)
     p.setFillColor(colors.HexColor('#6c757d'))
-    p.drawString(1.5*cm, y, "Status:")
+    p.drawString(1*cm, y, "Documento:")
+    p.setFont("Helvetica-Bold", 8)
+    p.setFillColor(colors.black)
+    p.drawString(3*cm, y, vale.numero_documento)
     
+    # Status do lado direito
     status_display = {
         'pendente_entrega': 'Pendente de Entrega',
         'entrega_realizada': 'Entrega Realizada',
@@ -565,155 +564,142 @@ def imprimir_pdf(id):
         'cancelado': 'Cancelado'
     }.get(vale.status, vale.status)
     
-    p.setFont("Helvetica-Bold", 8)
+    p.setFont("Helvetica", 7)
+    p.setFillColor(colors.HexColor('#6c757d'))
+    p.drawString(width/2, y, "Status:")
+    p.setFont("Helvetica-Bold", 7)
     p.setFillColor(colors.HexColor('#5e72e4'))
-    p.drawString(5*cm, y, status_display)
+    p.drawString(width/2 + 1.5*cm, y, status_display)
     p.setFillColor(colors.black)
-    y -= 0.9*cm
+    y -= 0.7*cm
     
     # Seção: Empresas Envolvidas
-    p.setFont("Helvetica-Bold", 10)
-    p.setFillColor(colors.HexColor('#11cdef'))  # Azul claro
-    p.drawString(1.5*cm, y, "🏢 Empresas Envolvidas")
+    p.setFont("Helvetica-Bold", 9)
+    p.setFillColor(colors.HexColor('#11cdef'))
+    p.drawString(1*cm, y, "🏢 Empresas Envolvidas")
     p.setFillColor(colors.black)
-    y -= 0.6*cm
-    
-    # Linha separadora
-    p.setStrokeColor(colors.HexColor('#e9ecef'))
-    p.line(1.5*cm, y, width - 1.5*cm, y)
     y -= 0.5*cm
     
     # Cliente
-    p.setFont("Helvetica", 8)
+    p.setFont("Helvetica", 7)
     p.setFillColor(colors.HexColor('#6c757d'))
-    p.drawString(1.5*cm, y, "Cliente:")
-    p.setFont("Helvetica", 8)
+    p.drawString(1*cm, y, "Cliente:")
+    p.setFont("Helvetica", 7)
     p.setFillColor(colors.black)
-    cliente_nome = vale.cliente.razao_social[:50] if vale.cliente else '-'
-    p.drawString(5*cm, y, cliente_nome)
-    y -= 0.45*cm
-    
-    # Destinatário
-    p.setFont("Helvetica", 8)
-    p.setFillColor(colors.HexColor('#6c757d'))
-    p.drawString(1.5*cm, y, "Destinatário:")
-    p.setFont("Helvetica", 8)
-    p.setFillColor(colors.black)
-    dest_nome = vale.destinatario.razao_social[:50] if vale.destinatario else '-'
-    p.drawString(5*cm, y, dest_nome)
-    y -= 0.45*cm
-    
-    # Transportadora
-    p.setFont("Helvetica", 8)
-    p.setFillColor(colors.HexColor('#6c757d'))
-    p.drawString(1.5*cm, y, "Transportadora:")
-    p.setFont("Helvetica", 8)
-    p.setFillColor(colors.black)
-    transp_nome = vale.transportadora.razao_social[:50] if vale.transportadora else '-'
-    p.drawString(5*cm, y, transp_nome)
-    y -= 0.9*cm
-    
-    # Seção: Informações de Entrega
-    p.setFont("Helvetica-Bold", 10)
-    p.setFillColor(colors.HexColor('#fb6340'))  # Laranja
-    p.drawString(1.5*cm, y, "🚚 Informações de Entrega")
-    p.setFillColor(colors.black)
-    y -= 0.6*cm
-    
-    # Linha separadora
-    p.setStrokeColor(colors.HexColor('#e9ecef'))
-    p.line(1.5*cm, y, width - 1.5*cm, y)
-    y -= 0.5*cm
-    
-    # Motorista
-    p.setFont("Helvetica", 8)
-    p.setFillColor(colors.HexColor('#6c757d'))
-    p.drawString(1.5*cm, y, "Motorista:")
-    p.setFont("Helvetica", 8)
-    p.setFillColor(colors.black)
-    motorista_nome = vale.motorista.nome[:50] if vale.motorista else 'Não informado'
-    p.drawString(5*cm, y, motorista_nome)
-    y -= 0.45*cm
-    
-    if vale.motorista:
-        # Placa
-        p.setFont("Helvetica", 8)
-        p.setFillColor(colors.HexColor('#6c757d'))
-        p.drawString(1.5*cm, y, "Placa do Veículo:")
-        p.setFont("Helvetica", 8)
-        p.setFillColor(colors.black)
-        p.drawString(5*cm, y, vale.motorista.placa_caminhao if vale.motorista.placa_caminhao else '-')
-        y -= 0.45*cm
-        
-        # Celular
-        p.setFont("Helvetica", 8)
-        p.setFillColor(colors.HexColor('#6c757d'))
-        p.drawString(1.5*cm, y, "Celular:")
-        p.setFont("Helvetica", 8)
-        p.setFillColor(colors.black)
-        p.drawString(5*cm, y, vale.motorista.celular if vale.motorista.celular else '-')
-        y -= 0.45*cm
-    
+    cliente_nome = vale.cliente.razao_social[:60] if vale.cliente else '-'
+    p.drawString(3*cm, y, cliente_nome)
     y -= 0.4*cm
     
-    # Seção: Quantidade de Pallets
-    p.setFont("Helvetica-Bold", 10)
-    p.setFillColor(colors.HexColor('#2dce89'))  # Verde
-    p.drawString(1.5*cm, y, "📦 Quantidade de Pallets")
+    # Destinatário
+    p.setFont("Helvetica", 7)
+    p.setFillColor(colors.HexColor('#6c757d'))
+    p.drawString(1*cm, y, "Destinatário:")
+    p.setFont("Helvetica", 7)
     p.setFillColor(colors.black)
-    y -= 0.6*cm
+    dest_nome = vale.destinatario.razao_social[:60] if vale.destinatario else '-'
+    p.drawString(3*cm, y, dest_nome)
+    y -= 0.4*cm
     
-    # Linha separadora
-    p.setStrokeColor(colors.HexColor('#e9ecef'))
-    p.line(1.5*cm, y, width - 1.5*cm, y)
+    # Transportadora
+    p.setFont("Helvetica", 7)
+    p.setFillColor(colors.HexColor('#6c757d'))
+    p.drawString(1*cm, y, "Transportadora:")
+    p.setFont("Helvetica", 7)
+    p.setFillColor(colors.black)
+    transp_nome = vale.transportadora.razao_social[:60] if vale.transportadora else '-'
+    p.drawString(3*cm, y, transp_nome)
+    y -= 0.7*cm
+    
+    # Seção: Informações de Entrega
+    p.setFont("Helvetica-Bold", 9)
+    p.setFillColor(colors.HexColor('#fb6340'))
+    p.drawString(1*cm, y, "🚚 Informações de Entrega")
+    p.setFillColor(colors.black)
+    y -= 0.5*cm
+    
+    # Motorista, Placa e Celular na mesma linha
+    if vale.motorista:
+        motorista_nome = vale.motorista.nome[:25] if vale.motorista.nome else 'Não informado'
+        placa = vale.motorista.placa_caminhao if vale.motorista.placa_caminhao else '-'
+        celular = vale.motorista.celular if vale.motorista.celular else '-'
+        
+        p.setFont("Helvetica", 7)
+        p.setFillColor(colors.HexColor('#6c757d'))
+        p.drawString(1*cm, y, "Motorista:")
+        p.setFont("Helvetica", 7)
+        p.setFillColor(colors.black)
+        p.drawString(3*cm, y, motorista_nome)
+        
+        p.setFont("Helvetica", 7)
+        p.setFillColor(colors.HexColor('#6c757d'))
+        p.drawString(8*cm, y, "Placa:")
+        p.setFont("Helvetica", 7)
+        p.setFillColor(colors.black)
+        p.drawString(9*cm, y, placa)
+        
+        p.setFont("Helvetica", 7)
+        p.setFillColor(colors.HexColor('#6c757d'))
+        p.drawString(11*cm, y, "Celular:")
+        p.setFont("Helvetica", 7)
+        p.setFillColor(colors.black)
+        p.drawString(12.5*cm, y, celular)
+    else:
+        p.setFont("Helvetica", 7)
+        p.setFillColor(colors.HexColor('#6c757d'))
+        p.drawString(1*cm, y, "Motorista:")
+        p.setFont("Helvetica", 7)
+        p.setFillColor(colors.black)
+        p.drawString(3*cm, y, "Não informado")
+    
+    y -= 0.7*cm
+    
+    # Seção: Quantidade de Pallets
+    p.setFont("Helvetica-Bold", 9)
+    p.setFillColor(colors.HexColor('#2dce89'))
+    p.drawString(1*cm, y, "📦 Quantidade de Pallets")
+    p.setFillColor(colors.black)
     y -= 0.5*cm
     
     # Quantidade Total
-    p.setFont("Helvetica", 8)
+    p.setFont("Helvetica", 7)
     p.setFillColor(colors.HexColor('#6c757d'))
-    p.drawString(1.5*cm, y, "Quantidade Total:")
-    p.setFont("Helvetica-Bold", 10)
+    p.drawString(1*cm, y, "Quantidade Total:")
+    p.setFont("Helvetica-Bold", 9)
     p.setFillColor(colors.HexColor('#5e72e4'))
-    p.drawString(5*cm, y, f"{vale.quantidade_pallets} pallets")
+    p.drawString(4*cm, y, f"{vale.quantidade_pallets} pallets")
     p.setFillColor(colors.black)
-    y -= 0.9*cm
+    y -= 0.7*cm
     
     # Seção: Datas
-    p.setFont("Helvetica-Bold", 10)
-    p.setFillColor(colors.HexColor('#f5365c'))  # Vermelho
-    p.drawString(1.5*cm, y, "📅 Datas")
+    p.setFont("Helvetica-Bold", 9)
+    p.setFillColor(colors.HexColor('#f5365c'))
+    p.drawString(1*cm, y, "📅 Datas")
     p.setFillColor(colors.black)
-    y -= 0.6*cm
-    
-    # Linha separadora
-    p.setStrokeColor(colors.HexColor('#e9ecef'))
-    p.line(1.5*cm, y, width - 1.5*cm, y)
     y -= 0.5*cm
     
-    # Data de Criação
-    p.setFont("Helvetica", 8)
+    # Data de Criação e Vencimento na mesma linha
+    p.setFont("Helvetica", 7)
     p.setFillColor(colors.HexColor('#6c757d'))
-    p.drawString(1.5*cm, y, "Data de Criação:")
-    p.setFont("Helvetica", 8)
+    p.drawString(1*cm, y, "Criação:")
+    p.setFont("Helvetica", 7)
     p.setFillColor(colors.black)
-    p.drawString(5*cm, y, vale.data_criacao.strftime('%d/%m/%Y às %H:%M'))
-    y -= 0.45*cm
+    p.drawString(3*cm, y, vale.data_criacao.strftime('%d/%m/%Y %H:%M'))
     
     # Data de Vencimento
-    p.setFont("Helvetica", 8)
+    p.setFont("Helvetica", 7)
     p.setFillColor(colors.HexColor('#6c757d'))
-    p.drawString(1.5*cm, y, "Data de Vencimento:")
-    p.setFont("Helvetica", 8)
+    p.drawString(8*cm, y, "Vencimento:")
+    p.setFont("Helvetica", 7)
     
     # Verificar se está vencido
     from datetime import datetime
     vencido = vale.data_vencimento < datetime.now().date()
     p.setFillColor(colors.HexColor('#f5365c') if vencido else colors.HexColor('#2dce89'))
-    p.drawString(5*cm, y, vale.data_vencimento.strftime('%d/%m/%Y'))
+    p.drawString(10.5*cm, y, vale.data_vencimento.strftime('%d/%m/%Y'))
     
     if vencido:
-        p.setFont("Helvetica-Bold", 7)
-        p.drawString(7*cm, y, "⚠ VENCIDO")
+        p.setFont("Helvetica-Bold", 6)
+        p.drawString(13*cm, y, "⚠ VENCIDO")
     
     # ==================== QR CODE ====================
     # Gerar QR Code
