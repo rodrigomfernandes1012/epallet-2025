@@ -512,12 +512,13 @@ def imprimir_pdf(id):
     # Logo do lado esquerdo
     from reportlab.lib.utils import ImageReader
     import os
-    logo_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'static', 'logo.png')
+    # Caminho correto: app/static/logo.png
+    logo_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'logo.png')
     
     try:
         logo = ImageReader(logo_path)
-        # Logo com 2cm de altura, proporcional
-        logo_height = 1.5*cm
+        # Logo 50% maior: 2.25cm de altura (era 1.5cm)
+        logo_height = 2.25*cm
         logo_width = logo_height * 2  # Ajustar proporção conforme necessário
         p.drawImage(logo, 1*cm, y - logo_height - 0.3*cm, width=logo_width, height=logo_height, preserveAspectRatio=True, mask='auto')
     except:
@@ -552,9 +553,9 @@ def imprimir_pdf(id):
     p.setFont("Helvetica", 7)
     p.setFillColor(colors.HexColor('#6c757d'))
     p.drawString(1*cm, y, "Documento:")
-    p.setFont("Helvetica-Bold", 8)
+    p.setFont("Helvetica-Bold", 7)
     p.setFillColor(colors.black)
-    p.drawString(3*cm, y, vale.numero_documento)
+    p.drawString(3*cm, y, vale.numero_documento.upper())
     
     # Status do lado direito
     status_display = {
@@ -586,7 +587,7 @@ def imprimir_pdf(id):
     p.drawString(1*cm, y, "Cliente:")
     p.setFont("Helvetica", 7)
     p.setFillColor(colors.black)
-    cliente_nome = vale.cliente.razao_social[:60] if vale.cliente else '-'
+    cliente_nome = (vale.cliente.razao_social[:60] if vale.cliente else '-').upper()
     p.drawString(3*cm, y, cliente_nome)
     y -= 0.4*cm
     
@@ -596,7 +597,7 @@ def imprimir_pdf(id):
     p.drawString(1*cm, y, "Destinatário:")
     p.setFont("Helvetica", 7)
     p.setFillColor(colors.black)
-    dest_nome = vale.destinatario.razao_social[:60] if vale.destinatario else '-'
+    dest_nome = (vale.destinatario.razao_social[:60] if vale.destinatario else '-').upper()
     p.drawString(3*cm, y, dest_nome)
     y -= 0.4*cm
     
@@ -606,7 +607,7 @@ def imprimir_pdf(id):
     p.drawString(1*cm, y, "Transportadora:")
     p.setFont("Helvetica", 7)
     p.setFillColor(colors.black)
-    transp_nome = vale.transportadora.razao_social[:60] if vale.transportadora else '-'
+    transp_nome = (vale.transportadora.razao_social[:60] if vale.transportadora else '-').upper()
     p.drawString(3*cm, y, transp_nome)
     y -= 0.7*cm
     
@@ -619,9 +620,9 @@ def imprimir_pdf(id):
     
     # Motorista, Placa e Celular na mesma linha
     if vale.motorista:
-        motorista_nome = vale.motorista.nome[:25] if vale.motorista.nome else 'Não informado'
-        placa = vale.motorista.placa_caminhao if vale.motorista.placa_caminhao else '-'
-        celular = vale.motorista.celular if vale.motorista.celular else '-'
+        motorista_nome = (vale.motorista.nome[:25] if vale.motorista.nome else 'NÃO INFORMADO').upper()
+        placa = (vale.motorista.placa_caminhao if vale.motorista.placa_caminhao else '-').upper()
+        celular = (vale.motorista.celular if vale.motorista.celular else '-')
         
         p.setFont("Helvetica", 7)
         p.setFillColor(colors.HexColor('#6c757d'))
@@ -649,7 +650,7 @@ def imprimir_pdf(id):
         p.drawString(1*cm, y, "Motorista:")
         p.setFont("Helvetica", 7)
         p.setFillColor(colors.black)
-        p.drawString(3*cm, y, "Não informado")
+        p.drawString(3*cm, y, "NÃO INFORMADO")
     
     y -= 0.7*cm
     
@@ -713,17 +714,17 @@ def imprimir_pdf(id):
     qr_x = width - 1.5*cm - qr_size
     qr_y = half_height + 0.8*cm
     
-    # Borda ao redor do QR Code
-    p.setStrokeColor(colors.HexColor('#2dce89'))
+    # Texto acima do QR Code (azul marinho)
+    p.setFont("Helvetica-Bold", 7)
+    p.setFillColor(colors.HexColor('#1e3a8a'))  # Azul marinho
+    p.drawCentredString(qr_x + qr_size/2, qr_y + qr_size + 0.3*cm, "Escaneie para validar")
+    
+    # Borda ao redor do QR Code (azul marinho)
+    p.setStrokeColor(colors.HexColor('#1e3a8a'))  # Azul marinho
     p.setLineWidth(2)
     p.rect(qr_x - 0.2*cm, qr_y - 0.2*cm, qr_size + 0.4*cm, qr_size + 0.4*cm, fill=False, stroke=True)
     
     p.drawImage(qr_image, qr_x, qr_y, width=qr_size, height=qr_size)
-    
-    # Texto abaixo do QR Code
-    p.setFont("Helvetica-Bold", 7)
-    p.setFillColor(colors.HexColor('#2dce89'))
-    p.drawCentredString(qr_x + qr_size/2, qr_y - 0.4*cm, "Escaneie para validar")
     
     # ==================== RODAPÉ ====================
     p.setStrokeColor(colors.HexColor('#2dce89'))
@@ -741,10 +742,7 @@ def imprimir_pdf(id):
     p.setDash(3, 3)
     p.line(0, half_height, width, half_height)
     
-    # Texto "CORTE AQUI"
-    p.setFont("Helvetica", 7)
-    p.setFillColor(colors.grey)
-    p.drawCentredString(width/2, half_height - 0.3*cm, "✂ CORTE AQUI ✂")
+    # Texto removido para não ocupar próxima página
     
     # Finalizar PDF
     p.showPage()
