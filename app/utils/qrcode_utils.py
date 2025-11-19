@@ -1,94 +1,53 @@
 """
-Utilitários para geração e validação de QR Code
+Utilitários para geração de QR Code para validação de vales
 """
-import hashlib
 import qrcode
+import hashlib
 from io import BytesIO
 import base64
 from flask import current_app
 
 
-def gerar_hash_vale(vale_id, numero_documento, pin, data_criacao):
-    """
-    Gera hash criptográfico único para o vale
-    
-    Args:
-        vale_id: ID do vale
-        numero_documento: Número do documento
-        pin: PIN de 4 dígitos
-        data_criacao: Data de criação do vale
-        
-    Returns:
-        str: Hash SHA256 em formato hexadecimal (primeiros 16 caracteres)
-    """
-    # Chave secreta do app (deve estar no .env em produção)
-    secret_key = current_app.config.get('SECRET_KEY', 'chave-padrao-dev')
-    
-    # Concatenar dados + chave secreta
-    dados = f"{vale_id}|{numero_documento}|{pin}|{data_criacao.isoformat()}|{secret_key}"
-    
-    # Gerar hash SHA256
-    hash_completo = hashlib.sha256(dados.encode('utf-8')).hexdigest()
-    
-    # Retornar primeiros 16 caracteres (suficiente para unicidade)
-    return hash_completo[:16]
-
-
 def gerar_qrcode_vale(vale_id, numero_documento, pin, data_criacao):
     """
-    Gera QR Code para validação do vale
+    Gera QR Code para validação de vale pallet
     
     Args:
         vale_id: ID do vale
-        numero_documento: Número do documento
-        pin: PIN de 4 dígitos
+        numero_documento: Número do documento do vale
+        pin: PIN de validação
         data_criacao: Data de criação do vale
         
     Returns:
-        str: Imagem do QR Code em base64
+        String base64 da imagem do QR Code
     """
-    # Gerar hash de validação
-    hash_validacao = gerar_hash_vale(vale_id, numero_documento, pin, data_criacao)
+    # Gerar assinatura digital (hash SHA256)
+    # Combinar dados sensíveis para criar assinatura única
+    dados_assinatura = f"{vale_id}|{numero_documento}|{pin}|{data_criacao.isoformat()}"
+    assinatura = hashlib.sha256(dados_assinatura.encode()).hexdigest()
     
-    # URL de validação
-    url_validacao = f"{current_app.config.get('BASE_URL', 'http://localhost:5000')}/publico/validar-vale/{vale_id}/{hash_validacao}"
+    # URL de produção
+    base_url = "https://portal.epallet.com.br"
     
-    # Criar QR Code
+    # Construir URL de validação com parâmetros
+    url_validacao = f"{base_url}/publico/validar-vale?id={vale_id}&doc={numero_documento}&sig={assinatura}"
+    
+    # Gerar QR Code
     qr = qrcode.QRCode(
-        version=1,  # Tamanho automático
-        error_correction=qrcode.constants.ERROR_CORRECT_M,  # Correção média
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
         box_size=10,
-        border=2,
+        border=4,
     )
-    
     qr.add_data(url_validacao)
     qr.make(fit=True)
     
-    # Gerar imagem
+    # Criar imagem
     img = qr.make_image(fill_color="black", back_color="white")
     
     # Converter para base64
     buffer = BytesIO()
     img.save(buffer, format='PNG')
-    buffer.seek(0)
-    img_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+    img_base64 = base64.b64encode(buffer.getvalue()).decode()
     
     return img_base64
-
-
-def validar_hash_vale(vale_id, numero_documento, pin, data_criacao, hash_fornecido):
-    """
-    Valida se o hash fornecido corresponde aos dados do vale
-    
-    Args:
-        vale_id: ID do vale
-        numero_documento: Número do documento
-        pin: PIN de 4 dígitos
-        data_criacao: Data de criação do vale
-        hash_fornecido: Hash a ser validado
-        
-    Returns:
-        bool: True se válido, False caso contrário
-    """
-    hash_esperado = gerar_hash_vale(vale_id, numero_documento, pin, data_criacao)
-    return hash_esperado == hash_fornecido
