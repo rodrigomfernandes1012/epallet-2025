@@ -7,6 +7,7 @@ from app import db
 from app.models import ValePallet, Empresa, TipoEmpresa, Motorista
 from app.forms import ValePalletForm
 from app.utils.whatsapp import enviar_whatsapp_vale_criado
+# alterado
 
 bp = Blueprint('vale_pallet', __name__, url_prefix='/vale-pallet')
 
