@@ -7,7 +7,6 @@ from app import db
 from app.models import ValePallet, Empresa, TipoEmpresa, Motorista
 from app.forms import ValePalletForm
 from app.utils.whatsapp import enviar_whatsapp_vale_criado
-# alterado
 
 bp = Blueprint('vale_pallet', __name__, url_prefix='/vale-pallet')
 
@@ -726,6 +725,45 @@ def imprimir_pdf(id):
     p.rect(qr_x - 0.2*cm, qr_y - 0.2*cm, qr_size + 0.4*cm, qr_size + 0.4*cm, fill=False, stroke=True)
     
     p.drawImage(qr_image, qr_x, qr_y, width=qr_size, height=qr_size)
+    
+    # ==================== PIN DE DEVOLUÇÃO (CANTO INFERIOR ESQUERDO) ====================
+    pin_x = 1*cm
+    pin_y = half_height + 0.8*cm
+    
+    # Instruções acima dos quadradinhos
+    p.setFont("Helvetica", 5)
+    p.setFillColor(colors.black)
+    
+    # Texto em múltiplas linhas
+    texto_linha1 = "O código abaixo foi gerado no momento do agendamento, assim que o pallet for entregue ao"
+    texto_linha2 = "motorista digite este código para o sistema efetuar o status de coleta / baixa da quantidade."
+    texto_linha3 = "A validação pode ser feita pelo site:"
+    texto_linha4 = "https://portal.epallet.com.br/devolucao-pallet/validar-pin ou devolve.epallet.com.br"
+    
+    p.drawString(pin_x, pin_y + 2.5*cm, texto_linha1)
+    p.drawString(pin_x, pin_y + 2.2*cm, texto_linha2)
+    p.drawString(pin_x, pin_y + 1.9*cm, texto_linha3)
+    
+    # URL em azul e negrito
+    p.setFont("Helvetica-Bold", 5)
+    p.setFillColor(colors.HexColor('#1e3a8a'))  # Azul marinho
+    p.drawString(pin_x, pin_y + 1.6*cm, texto_linha4)
+    
+    # Título "PIN DE DEVOLUÇÃO"
+    p.setFont("Helvetica-Bold", 7)
+    p.setFillColor(colors.black)
+    p.drawString(pin_x, pin_y + 1.2*cm, "PIN DE DEVOLUÇÃO:")
+    
+    # Desenhar 6 quadradinhos para preenchimento manual
+    quadrado_size = 0.6*cm
+    espacamento = 0.15*cm
+    
+    for i in range(6):
+        x_pos = pin_x + i * (quadrado_size + espacamento)
+        # Borda do quadrado
+        p.setStrokeColor(colors.black)
+        p.setLineWidth(1)
+        p.rect(x_pos, pin_y, quadrado_size, quadrado_size, fill=False, stroke=True)
     
     # ==================== RODAPÉ ====================
     p.setStrokeColor(colors.HexColor('#2dce89'))

@@ -210,3 +210,57 @@ def validar_vale_qrcode(vale_id, hash_validacao):
                          vale=vale,
                          valido=True,
                          mensagem='Documento autêntico')
+
+
+@publico_bp.route('/validar-vale/<int:vale_id>/<string:hash_validacao>/pin', methods=['POST'])
+def validar_vale_qrcode_pin(vale_id, hash_validacao):
+    """
+    Validação de PIN de devolução na página de validação do vale via QR Code
+    """
+    import hashlib
+    from app.utils.devolucao_service import validar_pin_devolucao
+    
+    # Buscar vale
+    vale = ValePallet.query.get_or_404(vale_id)
+    
+    # Gerar hash esperado (primeiros 16 caracteres do SHA256)
+    dados_assinatura = f"{vale.id}|{vale.numero_documento}|{vale.pin}|{vale.data_criacao.isoformat()}"
+    hash_completo = hashlib.sha256(dados_assinatura.encode()).hexdigest()
+    hash_esperado = hash_completo[:16]
+    
+    # Verificar se hash confere
+    if hash_validacao != hash_esperado:
+        flash('Assinatura digital inválida!', 'danger')
+        return render_template('publico/validar_vale_qrcode.html',
+                             vale=None,
+                             valido=False,
+                             mensagem='Assinatura digital inválida')
+    
+    # Pegar PIN do formulário
+    pin_devolucao = request.form.get('pin_devolucao', '').strip()
+    
+    if not pin_devolucao:
+        return render_template('publico/validar_vale_qrcode.html',
+                             vale=vale,
+                             valido=True,
+                             mensagem='Documento autêntico',
+                             pin_erro=True,
+                             pin_mensagem='Por favor, digite o PIN de devolução.')
+    
+    # Validar PIN usando a mesma função de devolucao_pallet
+    resultado = validar_pin_devolucao(pin_devolucao)
+    
+    if resultado['sucesso']:
+        return render_template('publico/validar_vale_qrcode.html',
+                             vale=vale,
+                             valido=True,
+                             mensagem='Documento autêntico',
+                             pin_validado=True,
+                             pin_mensagem=resultado['mensagem'])
+    else:
+        return render_template('publico/validar_vale_qrcode.html',
+                             vale=vale,
+                             valido=True,
+                             mensagem='Documento autêntico',
+                             pin_erro=True,
+                             pin_mensagem=resultado['mensagem'])

@@ -215,6 +215,83 @@
                                         </div>
                                     </div>
                                     
+                                    <!-- Seção de Validação de PIN de Devolução -->
+                                    <div class="mt-5">
+                                        <div class="card border-primary">
+                                            <div class="card-header bg-gradient-primary text-white">
+                                                <h5 class="mb-0">
+                                                    <i class="fas fa-undo-alt me-2"></i>
+                                                    Validar PIN de Devolução
+                                                </h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <p class="text-sm text-muted mb-3">
+                                                    Se você está devolvendo pallets, digite o PIN de 6 dígitos fornecido no momento do agendamento:
+                                                </p>
+                                                
+                                                {% if pin_validado %}
+                                                <div class="alert alert-success" role="alert">
+                                                    <div class="d-flex align-items-center">
+                                                        <i class="fas fa-check-circle fa-2x me-3"></i>
+                                                        <div>
+                                                            <h6 class="alert-heading mb-1">PIN Validado com Sucesso!</h6>
+                                                            <p class="mb-0 text-sm">{{ pin_mensagem }}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {% endif %}
+                                                
+                                                {% if pin_erro %}
+                                                <div class="alert alert-danger" role="alert">
+                                                    <div class="d-flex align-items-center">
+                                                        <i class="fas fa-times-circle fa-2x me-3"></i>
+                                                        <div>
+                                                            <h6 class="alert-heading mb-1">Erro na Validação</h6>
+                                                            <p class="mb-0 text-sm">{{ pin_mensagem }}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                {% endif %}
+                                                
+                                                <form method="POST" action="{{ url_for('publico.validar_vale_qrcode_pin', vale_id=vale.id, hash_validacao=request.view_args.hash_validacao) }}">
+                                                    <div class="row align-items-end">
+                                                        <div class="col-md-6">
+                                                            <div class="form-group">
+                                                                <label for="pin_devolucao" class="form-label">
+                                                                    <i class="fas fa-key me-1"></i>
+                                                                    PIN de Devolução (6 dígitos)
+                                                                </label>
+                                                                <input type="text" 
+                                                                       class="form-control form-control-lg" 
+                                                                       id="pin_devolucao" 
+                                                                       name="pin_devolucao" 
+                                                                       placeholder="000000" 
+                                                                       maxlength="6" 
+                                                                       pattern="[0-9]{6}" 
+                                                                       required
+                                                                       style="font-size: 1.5rem; letter-spacing: 0.5rem; text-align: center;">
+                                                                <small class="form-text text-muted">Digite apenas números</small>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <button type="submit" class="btn btn-primary btn-lg w-100">
+                                                                <i class="fas fa-check me-2"></i>
+                                                                Validar PIN
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                                
+                                                <div class="mt-3 p-2 bg-light rounded">
+                                                    <p class="text-xs text-muted mb-0">
+                                                        <i class="fas fa-info-circle me-1"></i>
+                                                        <strong>Importante:</strong> O PIN é gerado no momento do agendamento da devolução e deve ser fornecido pelo responsável.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
                                 </div>
                                 
                                 {% else %}
